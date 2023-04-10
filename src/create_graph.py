@@ -40,8 +40,8 @@ def create_graph(start_date, end_date):
 
 
 if __name__ == '__main__':
-    str_date = "2017-06-22"
-    e_date = "2022-03-01"
+    str_date = "2017-06-23"
+    e_date = "2017-06-24"
     create_graph(start_date=str_date, end_date=e_date)
 
 
