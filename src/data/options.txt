@@ -1,0 +1,27 @@
+const options = {
+  "nodes": {
+    "borderWidth": null,
+    "borderWidthSelected": null,
+    "opacity": null,
+    "size": null
+  },
+  "edges": {
+    "color": {
+      "inherit": true
+    },
+    "selfReferenceSize": null,
+    "selfReference": {
+      "angle": 0.7853981633974483
+    },
+    "smooth": {
+      "forceDirection": "none"
+    }
+  },
+  "physics": {
+    "enabled": false,
+    "barnesHut": {
+      "gravitationalConstant": -1500
+    },
+    "minVelocity": 0.75
+  }
+}
