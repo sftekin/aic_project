@@ -7,7 +7,8 @@ from datetime import datetime
 def run():
     data_path = "../EthereumDataset/phishing_deanony_2hop_transaction.csv"
 
-    columns = ['hash','block_number','transaction_index','from_address','to_address','value','gas','gas_price', 'block_timestamp']
+    columns = ['hash', 'block_number', 'transaction_index', 'from_address',
+               'to_address', 'value', 'gas', 'gas_price', 'block_timestamp']
     data = []
     with open(data_path, "r") as f:
         for line in f.readlines():
