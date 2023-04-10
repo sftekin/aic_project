@@ -41,6 +41,5 @@ def set_graph_options(nt):
     with open(options_text_path, "r") as f:
         nt.set_options(f.read())
 
-
 if __name__ == '__main__':
     plot_graph()
