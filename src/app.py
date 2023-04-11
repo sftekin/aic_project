@@ -1,6 +1,10 @@
 import os
 import pandas as pd
-from dash import Dash, Input, Output, dcc, html
+import numpy as np
+from dash import Dash, Input, Output, dcc, html, State
+from dash.exceptions import PreventUpdate
+import plotly.express as px
+import dash_bootstrap_components as dbc
 
 freq_map = {
     "H": "Hourly",
@@ -32,7 +36,7 @@ app.layout = html.Div(
         html.Div(
             children=[
                 html.H1(children="ETH Account Analytics", className="header-title"),
-                html.P(children="Analyze the behavior of an account", className="header-description")
+                html.P(children="Analyze the behavior of accounts", className="header-description")
             ],
             className="header"
         ),
@@ -50,7 +54,7 @@ app.layout = html.Div(
                         dcc.Dropdown(
                             id="freq-filter",
                             options=[{"label": freq_map[freq], "value": freq} for freq in ["H", "D", "M"]],
-                            value="H",
+                            value="D",
                             clearable=False,
                             className="dropdown",
                         ),
@@ -86,9 +90,11 @@ app.layout = html.Div(
             className="wrapper",
         ),
 
+        # De-Anonymization Analysis
         html.Div(
             children=[
-                html.H2(children="De-Anonymization Analysis", className="sub-header")
+                html.H2(children="De-Anonymization Analysis", className="sub-header"),
+                html.H3(children="Temporal Analysis", className="subsub-header")
             ],
             className="subheader"
         ),
@@ -147,6 +153,93 @@ app.layout = html.Div(
             ],
             className="wrapper",
         ),
+        html.Div(
+            children=[
+                html.Div(
+                    children=dcc.Graph(
+                        id="hourly-graph",
+                        config={"displayModeBar": False},
+                    ),
+                    className="card",
+                ),
+                html.Div(
+                    children=dcc.Graph(
+                        id="weekly-graph",
+                        config={"displayModeBar": False},
+                    ),
+                    className="card",
+                ),
+            ],
+            className="wrapper",
+        ),
+        html.Div(
+            children=[
+                html.H3(children="Spatial Analysis", className="subsub-header")
+            ],
+            className="subheader"
+        ),
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
+            children=[
+                html.Div(dcc.Input(id='input-on-submit1', type='text', placeholder="First Account")),
+                html.Div(dcc.Input(id='input-on-submit2', type='text', placeholder="Second Account")),
+                html.Button(id='add-element-button', n_clicks=0, children='Create graph',
+                            style={"width": '200px'}),
+            ],
+            className="menu"
+        ),
+        html.Div(id="graph-layout"),
+
+        # Phishing
+        html.Div(
+            children=[
+                html.H2(children="Phishing Analysis", className="sub-header"),
+                html.H3(children="Temporal Analysis", className="subsub-header")
+            ],
+            className="subheader"
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    children=[
+                        html.Div(children="Time Frequency", className="menu-title"),
+                        dcc.Dropdown(
+                            id="freq-filter-3",
+                            options=[{"label": freq_map[freq], "value": freq} for freq in ["H", "D", "M"]],
+                            value="H",
+                            clearable=False,
+                            className="dropdown",
+                        ),
+                    ]
+                ),
+                html.Div(
+                    children=[
+                        html.Div(children="The Phishing Account Address", className="menu-title"),
+                        dcc.Input(
+                            placeholder='e.g. 0x0000000000000000000000000000000000000001',
+                            type='text',
+                            value='',
+                            id="account-filter-3",
+                            size="40",
+                            className="search-bar"
+                        ),
+                    ]
+                ),
+            ],
+            className="menu",
+        ),
+        html.Div(
+            children=[
+                html.Div(
+                    children=dcc.Graph(
+                        id="phishing-graph",
+                        config={"displayModeBar": False},
+                    ),
+                    className="card",
+                ),
+            ],
+            className="wrapper",
+        ),
     ]
 )
 
@@ -172,20 +265,16 @@ def update_time_plot(freq, start_date, end_date):
     return time_plot_figure
 
 
+# Deanony FUNCTIONS
 @app.callback(
     Output("deanony-graph", "figure"),
     Input("freq-filter-2", "value"),
     Input("account-filter-1", "value"),
     Input("account-filter-2", "value"),
 )
-def update_deanony_plot(freq, addr_1, addr_2):
-    def process_addr(addr_str):
-        addr_df = data.loc[data["from_address"] == addr_str]
-        addr_df = addr_df.groupby(pd.Grouper(freq=freq)).count()
-        return addr_df
-
-    addr_df_1 = process_addr(addr_1)
-    addr_df_2 = process_addr(addr_2)
+def update_deanony_time_plot(freq, addr_1, addr_2):
+    addr_df_1 = process_addr(addr_1, freq)
+    addr_df_2 = process_addr(addr_2, freq)
 
     time_plot_figure = {
         "data": [
@@ -206,6 +295,134 @@ def update_deanony_plot(freq, addr_1, addr_2):
         ]
     }
     return time_plot_figure
+
+
+@app.callback(
+    Output("hourly-graph", "figure"),
+    Input("account-filter-1", "value"),
+    Input("account-filter-2", "value"),
+)
+def update_deanony_acc_hourly_plot(addr_1, addr_2):
+    addr_df_1 = process_addr(addr_1, freq="H")
+    addr_df_2 = process_addr(addr_2, freq="H")
+
+    arr_1 = get_daily_trend(addr_df_1)
+    arr_2 = get_daily_trend(addr_df_2)
+
+    account_df1 = pd.DataFrame({"time_step": np.arange(24), "tx_count": arr_1, "address": np.tile(addr_1, 24)})
+    account_df2 = pd.DataFrame({"time_step": np.arange(24), "tx_count": arr_2, "address": np.tile(addr_2, 24)})
+    deanony_df = pd.concat([account_df1, account_df2])
+
+    fig = px.bar(deanony_df, x="time_step", y="tx_count",
+                 color="address", barmode='overlay',
+                 title="Daily Trend of the Accounts", labels={'x': 'Hour intervals', 'y': 'TX Count'})
+
+    layout = dict(
+        xaxis=dict(
+            tickmode="array",
+            tickvals=np.arange(0, 24).astype(int),
+        )
+    )
+
+    fig.update_layout(layout)
+
+    return fig
+
+
+@app.callback(
+    Output("weekly-graph", "figure"),
+    Input("account-filter-1", "value"),
+    Input("account-filter-2", "value"),
+)
+def update_deanony_acc_weekly_plot(addr_1, addr_2):
+    addr_df_1 = process_addr(addr_1, freq="D")
+    addr_df_2 = process_addr(addr_2, freq="D")
+
+    arr_1 = get_weekly_trend(addr_df_1)
+    arr_2 = get_weekly_trend(addr_df_2)
+
+    account_df1 = pd.DataFrame({"time_step": np.arange(7), "tx_count": arr_1, "address": np.tile(addr_1, 7)})
+    account_df2 = pd.DataFrame({"time_step": np.arange(7), "tx_count": arr_2, "address": np.tile(addr_2, 7)})
+    deanony_df = pd.concat([account_df1, account_df2])
+
+    fig = px.bar(deanony_df, x="time_step", y="tx_count",
+                 color="address", barmode='overlay',
+                 title="Weekly Trend of the Accounts", labels={'x': 'Day intervals', 'y': 'TX Count'})
+
+    layout = dict(
+        xaxis=dict(
+            tickmode="array",
+            tickvals=np.arange(0, 7).astype(int),
+        )
+    )
+
+    fig.update_layout(layout)
+
+    return fig
+
+
+@app.callback(
+    Output('graph-layout', 'children'),
+    Input('add-element-button', 'n_clicks'),
+    State('input-on-submit1', 'value'),
+    State('input-on-submit2', 'value')
+)
+def add_strategy_divison(n_clicks, first_addr, second_addr):
+    if n_clicks:
+        element = html.Div(
+            children=[
+                html.Iframe(src="assets/deanon_2288_826827.html",
+                            style={"height": "1024px", "width": "100%"}
+                            )
+            ]
+        )
+        return element
+    else:
+        raise PreventUpdate
+
+
+# Phishing FUNCTIONS
+@app.callback(
+    Output("phishing-graph", "figure"),
+    Input("freq-filter-3", "value"),
+    Input("account-filter-3", "value"),
+)
+def update_deanony_time_plot(freq, addr):
+    account_df = process_addr(addr, freq)
+    time_plot_figure = {
+        "data": [
+            {
+                "x": account_df.index,
+                "y": account_df["hash"],
+                "type": "lines",
+                "name": addr,
+                "marker": dict(color='rgb(55, 83, 109)'),
+            }
+        ]
+    }
+    return time_plot_figure
+
+
+def process_addr(addr_str, freq="H"):
+    addr_df = data.loc[data["from_address"] == addr_str]
+    addr_df = addr_df.groupby(pd.Grouper(freq=freq)).count()
+    return addr_df
+
+
+def get_daily_trend(acc_df):
+    daily_tx_count = []
+    for time_ind in range(24):
+        idx = pd.to_datetime(acc_df.index).hour == time_ind
+        daily_tx_count.append(acc_df.loc[idx, "hash"].sum())
+    return daily_tx_count
+
+
+def get_weekly_trend(acc_df):
+    weekly_tx_count = []
+    for time_ind in range(7):
+        idx = pd.to_datetime(acc_df.index).dayofweek == time_ind
+        weekly_tx_count.append(acc_df.loc[idx, "hash"].sum())
+    return weekly_tx_count
 
 
 if __name__ == "__main__":
