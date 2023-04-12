@@ -1,5 +1,6 @@
 import os
 import random
+import shutil
 
 import matplotlib
 import networkx as nx
@@ -7,91 +8,146 @@ import numpy as np
 import pandas as pd
 from pyvis.network import Network
 from tqdm import tqdm
-import time
+
+from create_graph import *
 
 
-def plot_graph_helper(graph, address_df, tag=''):
+def plot_graph(edges, address_list, task='deanon', mode='label', combine_addresses_flag=False, folder=''):
+    '''
+
+    :param edges:
+    :param address_list: list (for phish and deanon-pred) or list of list (for deanon-label)
+    :param task:
+    :param mode:
+    :param combine_addresses_flag:
+    :return:
+    '''
+
+    assert task in ['deanon', 'phish'], 'Invalid task'
+    if task == 'deanon':
+        if combine_addresses_flag:
+            print('Switching to combine_addresses_flag=False because the task is deanonymization')
+            combine_addresses_flag = False
+        if mode == 'label' and address_list and not isinstance(address_list[0], list):
+            print('In deanonymization label visualization, provide list of pairs as addresses')
+            raise ValueError
+        if mode == 'pred' and address_list and isinstance(address_list[0], list):
+            print('In deanonymization pred visualization, provide list of addresses (not pairs)')
+            raise ValueError
+
+    address_data_path = os.path.join("data", "address_data.csv")
+    address_df = pd.read_csv(address_data_path, index_col='id')
+    address_df_ = address_df.set_index('address')
+    address_df_['id'] = address_df.index
+
+    preds = None
+    if mode == 'pred':
+        if task == 'deanon':
+            preds = pd.read_csv(os.path.join('../EthereumDataset', 'AIC_ENS_pred_similarity_proba.txt'), sep=',')
+            preds['query_addr'] = preds['query_addr'].map(address_df_['id'].to_dict(), na_action='ignore')
+            preds['cand_addr'] = preds['cand_addr'].map(address_df_['id'].to_dict()).astype(int)
+            preds.dropna(inplace=True)
+            preds['query_addr'] = preds['query_addr'].astype(int)
+            preds.set_index(['query_addr', 'cand_addr'], inplace=True)
+        else:
+            preds = pd.read_csv(os.path.join('../EthereumDataset', 'AIC_eoa_pred_phishing_proba.txt'), sep=',')
+            preds['address'].map(address_df_['id'].to_dict()).astype(int)
+            preds.set_index('address', inplace=True)
+
+    html_path_list = []
+
+    if combine_addresses_flag:  # can be True only in phish task
+        combined_ego_graph = nx.DiGraph()
+        for address in address_list:
+            ego_graph = get_subgraph(edges, address)
+            combined_ego_graph = nx.compose(ego_graph, combined_ego_graph)
+            print(combined_ego_graph)
+        graph = combined_ego_graph
+        tag = f"{task}_{mode}_{'_'.join(address_list)}"
+        html_path = plot_graph_helper(graph, address_df, task, address_list, preds, tag, folder)
+        html_path_list.append(html_path)
+    else:
+        if task == 'phish' or mode == 'pred':
+            for address in tqdm(address_list):
+                tag = f"{task}_{mode}_{address}"
+                ego_graph = get_subgraph(edges, address)
+                html_path = plot_graph_helper(ego_graph, address_df, task, [address], preds, tag, folder)
+                html_path_list.append(html_path)
+        else:  # deanon-label
+            for pair in tqdm(address_list):
+                combined_ego_graph = nx.DiGraph()
+                for address in pair:
+                    ego_graph = get_subgraph(edges, address)
+                    combined_ego_graph = nx.compose(ego_graph, combined_ego_graph)
+                tag = f"{task}_{mode}_{pair[0]}_{pair[1]}"
+                html_path = plot_graph_helper(combined_ego_graph, address_df, task, pair, preds, tag, folder)
+                html_path_list.append(html_path)
+
+    return html_path_list
+
+
+def plot_graph_helper(graph, address_df, task, address_list, preds=None, tag='', folder=''):
+    # hover titles
     labels = dict([(i, address_df.loc[i]['address']) for i in graph.nodes])
     nx.set_node_attributes(graph, labels, 'title')
 
-    if mode == 'phish':
-        colors = dict([(i, 'tab:blue') if address_df.loc[i]['phish_flag'] else (i, 'tab:red') for i in graph.nodes])
-    elif mode == 'deanon':
-        color_list = get_colors()
+    if preds is None:
+        if task == 'phish':
+            colors = dict([(i, 'orangered') for i in graph.nodes if address_df.loc[i]['phish_flag']])
+
+        elif task == 'deanon':
+            # color_list = get_colors()
+            colors = {}
+            for i in graph.nodes:
+                if i in address_list:
+                    colors[i] = 'orangered'
+                # pair_idx = address_df.loc[i]['pair_idx']
+                # if pair_idx != -1:
+                #     colors[i] = color_list[pair_idx % len(color_list)]
+        else:
+            raise NotImplementedError
+    else:
         colors = {}
         for i in graph.nodes:
-            pair_idx = address_df.loc[i]['pair_idx']
-            if pair_idx != -1:
-                colors[i] = color_list[pair_idx % len(color_list)]
-                # colors[i] = 'red'
-        # colors = dict([(i, 'tab:blue') if address_df.loc[i]['pair_idx'] == -1 else (i, 'tab:red') for i in graph.nodes])
-    else:
-        raise NotImplementedError
+            if task == 'phish':
+                val = preds.loc[i].pred_score
+            else:
+                try:
+                    val = preds.loc[address_list[0], i].pred_score
+                except:
+                    val = 0
+            colors[i] = matplotlib.colors.to_hex(matplotlib.colormaps['Reds'](val * 255))
+
     nx.set_node_attributes(graph, colors, 'color')
 
+    shapes = {}
+    for i in graph.nodes:
+        if address_df.loc[i]['node_type'] == 0:  # contract
+            shapes[i] = 'square'
+        else:  # user
+            shapes[i] = 'dot'
+    nx.set_node_attributes(graph, shapes, 'shape')
+
+    # colors
     nt = Network(height="1000px", width="1000px", select_menu=True, directed=True)
     nt.from_nx(graph)
-    # set_graph_options(nt)
+    set_graph_options(nt)
 
     # nt.show_buttons(filter_=['physics'])
-    nt.show_buttons()
+    # nt.show_buttons()
 
     # nt.toggle_physics(False)
     # nt.repulsion()
     # nt.show('{tag}.html.html')
-    nt.write_html(f'{tag}.html', local=False)
-    # time.sleep(20)
 
-
-def plot_graph(address_list=[], mode='deanon', combine_addresses_flag=False):
-
-    assert mode in ['deanon', 'phish'], 'Invalid mode'
-    if mode == 'deanon':
-        if combine_addresses_flag:
-            print('Switching to combine_addresses_flag=False because the mode is deanonymization')
-            combine_addresses_flag = False
-        if address_list and not isinstance(address_list[0], list):
-            print('In deanonymization, provide list of pair lists as addresses')
-            raise ValueError
-
-    address_data_path = os.path.join("data", "address_data.csv")
-    edges_path = os.path.join("data", "edges.csv")
-
-    address_df = pd.read_csv(address_data_path, index_col='id')
-    edges = pd.read_csv(edges_path)
-
-    if address_list:
-        if combine_addresses_flag:  # can be True only in phish mode
-            combined_ego_graph = nx.DiGraph()
-            for address in address_list:
-                ego_graph = get_subgraph(edges, address)
-                combined_ego_graph = nx.compose(ego_graph, combined_ego_graph)
-                print(combined_ego_graph)
-            graph = combined_ego_graph
-            tag = f"{mode}_{'_'.join(address_list)}"
-            plot_graph_helper(graph, address_df, tag)
-        else:
-            if mode == 'phish':
-                for address in tqdm(address_list):
-                    tag = f"{mode}_{address}"
-                    ego_graph = get_subgraph(edges, address)
-                    plot_graph_helper(ego_graph, address_df, tag)
-            else:
-                for pair in tqdm(address_list):
-                    combined_ego_graph = nx.DiGraph()
-                    for address in pair:
-                        ego_graph = get_subgraph(edges, address)
-                        combined_ego_graph = nx.compose(ego_graph, combined_ego_graph)
-                    tag = f"{mode}_{pair[0]}_{pair[1]}"
-                    plot_graph_helper(combined_ego_graph, address_df, tag)
-
+    if folder:
+        html_path = os.path.join(folder, f'{tag}.html')
     else:
-        graph = nx.DiGraph()
-        graph.add_edges_from(set_edge_width(edges))
+        html_path = f'{tag}.html'
 
-        tag = f"{mode}_all"
-        plot_graph_helper(graph, address_df, tag)
-
+    nt.write_html(html_path, local=True)
+    # time.sleep(20)
+    return html_path
 
 def set_edge_width(edges):
     edges['value'] = (np.log10(edges.value).clip(0) + 1).astype(int)  # for width
@@ -110,7 +166,7 @@ def get_subgraph(edges, node, n=2):
     nodes_to = edges_from.to_address
     nodes_from = edges_to.from_address
     one_hops = list(set(nodes_to.to_list()))   # to
-    one_hops = list(set(nodes_to.to_list() + nodes_from.to_list()))   # to + from
+    # one_hops = list(set(nodes_to.to_list() + nodes_from.to_list()))   # to + from
 
     for _node in one_hops:
         _to = edges[edges.from_address == _node]  # to
@@ -132,28 +188,59 @@ def set_graph_options(nt):
         nt.set_options(f.read())
 
 
-def get_colors(mode='Dark2'):
-    if mode == 'random':
+def get_colors(cmap='Dark2'):
+    if cmap == 'random':
         colors = [c for c in matplotlib.colors.cnames.keys()]
         random.shuffle(colors)
-    elif mode in matplotlib.colormaps:
-        colors = [matplotlib.colors.to_hex(c) for c in matplotlib.colormaps['Dark2'].colors]
+    elif cmap in matplotlib.colormaps:
+        colors = [matplotlib.colors.to_hex(c) for c in matplotlib.colormaps[cmap].colors]
     else:
         raise NotImplementedError
     return colors
 
 
 if __name__ == '__main__':
-    mode = 'deanon'
+
+    start_date = "2017-06-22"  # "2017-06-22"
+    end_date = "2022-03-01"    # "2022-03-01"
+    task = 'deanon'  # deanon or phish
+    mode = 'label'   # label or pred
+
     address_data_path = os.path.join("data", "address_data.csv")
-    address_df = pd.read_csv(address_data_path, index_col='id')
-    if mode == 'phish':
-        address_list = list(address_df[address_df.phish_flag is True].index)
-        print(len(address_list))
-    elif mode == 'deanon':
-        address_list = [list(address_df[address_df.pair_idx == i].index) for i in range(167)]
-        address_list = [pair for pair in address_list if len(pair) == 2]
-        print(len(address_list))
+    edges_data_path = os.path.join("data", f"edges_{start_date}_{end_date}.csv")
+
+    if os.path.isfile(address_data_path):
+        print('Loading addresses...')
+        address_df = pd.read_csv(address_data_path, index_col='id')
+    else:
+        print('Creating addresses...')
+        address_df = create_addresses()
+        address_df.to_csv(address_data_path)
+
+    if os.path.isfile(edges_data_path):
+        print('Loading edges...')
+        edges = pd.read_csv(edges_data_path)
+    else:
+        print('Creating edges...')
+        edges = create_edges(address_df, start_date=start_date, end_date=end_date)
+        edges.to_csv(edges_data_path)
+
+    if task == 'phish':
+        address_list = list(address_df[address_df.phish_flag == True].index)
+    elif task == 'deanon':
+        if mode == 'label':
+            address_list = [list(address_df[address_df.pair_idx == i].index) for i in range(167)]
+            address_list = [pair for pair in address_list if len(pair) == 2]
+        else:
+            address_list = address_df[address_df.pair_idx != -1].index.tolist()
     else:
         raise NotImplementedError
-    plot_graph(address_list=address_list, mode=mode, combine_addresses_flag=False)
+
+    folder = os.path.join('outputs', f'{task}_{mode}')
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    html_path_list = plot_graph(edges, address_list=address_list, task=task, mode=mode, combine_addresses_flag=False, folder=folder)
+    shutil.copytree('lib', os.path.join(folder, 'lib'))
+
+    print(html_path_list)

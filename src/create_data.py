@@ -16,7 +16,7 @@ def run():
 
     for col in ["block_number", "transaction_index", "value", "gas", "gas_price"]:
         data_df[col] = data_df[col].astype(float)
-    data_df = data_df[data_df.value > 0]  # 7871005 -> 4251155 rows
+    # data_df = data_df[data_df.value > 0]  # 7871005 -> 4251155 rows
     data_df.value /= 10 ** 18
 
     data_df["block_timestamp"] = data_df["block_timestamp"].astype(int)
