@@ -240,6 +240,22 @@ app.layout = html.Div(
             ],
             className="wrapper",
         ),
+        html.Div(
+            children=[
+                html.H3(children="Spatial Analysis", className="subsub-header")
+            ],
+            className="subheader"
+        ),
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
+            children=[
+                html.Div(dcc.Input(id='input-on-submit3', type='text', placeholder="Phishing Account")),
+                html.Button(id='add-element-button2', n_clicks=0, children='Create graph',
+                            style={"width": '200px'}),
+            ],
+            className="menu"
+        ),
+        html.Div(id="graph-layout2"),
     ]
 )
 
@@ -370,9 +386,10 @@ def update_deanony_acc_weekly_plot(addr_1, addr_2):
 def add_strategy_divison(n_clicks, first_addr, second_addr):
     if n_clicks:
         element = html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
             children=[
                 html.Iframe(src="assets/deanon_2288_826827.html",
-                            style={"height": "1024px", "width": "100%"}
+                            style={"height": "512px", "width": "600px"}
                             )
             ]
         )
@@ -401,6 +418,26 @@ def update_deanony_time_plot(freq, addr):
         ]
     }
     return time_plot_figure
+
+
+@app.callback(
+    Output('graph-layout2', 'children'),
+    Input('add-element-button2', 'n_clicks'),
+    State('input-on-submit3', 'value'),
+)
+def add_strategy_divison(n_clicks, phis_addr):
+    if n_clicks:
+        element = html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
+            children=[
+                html.Iframe(src="assets/phish_label_2294.html",
+                            style={"height": "512px", "width": "600px"}
+                            )
+            ]
+        )
+        return element
+    else:
+        raise PreventUpdate
 
 
 def process_addr(addr_str, freq="H"):
