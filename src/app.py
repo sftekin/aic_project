@@ -1,10 +1,10 @@
 import os
+import shutil
 import pandas as pd
 import numpy as np
 from dash import Dash, Input, Output, dcc, html, State
 from dash.exceptions import PreventUpdate
 import plotly.express as px
-import dash_bootstrap_components as dbc
 
 freq_map = {
     "H": "Hourly",
@@ -17,6 +17,15 @@ data = (pd.read_csv("data/eth_data.csv", parse_dates=["block_timestamp"], index_
 addr_data = pd.read_csv("data/address_data.csv", index_col=0)
 id2addr = addr_data["address"].to_dict()
 addr2id = addr_data["address"].T.to_dict()
+
+
+if not os.path.exists(os.path.join("assets", "lib")):
+    if not os.path.exists("lib"):
+        raise RuntimeError("The lib directory is not found.")
+    else:
+        shutil.move("lib", "assets/lib")
+        print("The lib/ directory is put under assets/")
+
 
 external_stylesheets = [
     {
