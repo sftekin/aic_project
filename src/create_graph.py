@@ -78,10 +78,26 @@ def generate_pair_idx(deanon_pair_list, address):
 
 
 if __name__ == '__main__':
-    # start_date = "2022-02-22"  # "2017-06-22"
     start_date = "2017-06-22"  # "2017-06-22"
     end_date = "2022-03-01"    # "2022-03-01"
 
-    create_graph(start_date=start_date, end_date=end_date)
+    address_data_path = os.path.join("data", "address_data.csv")
+    edges_data_path = os.path.join("data", f"edges_{start_date}_{end_date}.csv")
+
+    if os.path.isfile(address_data_path):
+        print('Loading addresses...')
+        address_df = pd.read_csv(address_data_path, index_col='id')
+    else:
+        print('Creating addresses...')
+        address_df = create_addresses()
+        address_df.to_csv(address_data_path)
+
+    if os.path.isfile(edges_data_path):
+        print('Loading edges...')
+        edges = pd.read_csv(edges_data_path)
+    else:
+        print('Creating edges...')
+        edges = create_edges(address_df, start_date=start_date, end_date=end_date)
+        edges.to_csv(edges_data_path)
 
 

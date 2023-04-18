@@ -1,4 +1,5 @@
 import os
+import glob
 import shutil
 import pandas as pd
 import numpy as np
@@ -12,11 +13,17 @@ freq_map = {
     "M": "Monthly"
 }
 
+# load data
 data = (pd.read_csv("data/eth_data.csv", parse_dates=["block_timestamp"], index_col=0)
         .set_index("block_timestamp"))
 addr_data = pd.read_csv("data/address_data.csv", index_col=0)
 id2addr = addr_data["address"].to_dict()
-addr2id = addr_data["address"].T.to_dict()
+addr2id = {v: k for k, v in id2addr.items()}
+
+# put the html files inside assets folder
+for html_path in glob.glob(os.path.join("outputs", "selections", "*.html")):
+    dest_path = os.path.join("assets", os.path.basename(html_path))
+    shutil.copy(html_path, dest_path)
 
 
 if not os.path.exists(os.path.join("assets", "lib")):
@@ -190,8 +197,7 @@ app.layout = html.Div(
         html.Div(
             style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
             children=[
-                html.Div(dcc.Input(id='input-on-submit1', type='text', placeholder="First Account")),
-                html.Div(dcc.Input(id='input-on-submit2', type='text', placeholder="Second Account")),
+                html.Div(dcc.Input(id='input-on-submit1', type='text', placeholder="De-Anonymization Account Address")),
                 html.Button(id='add-element-button', n_clicks=0, children='Create graph',
                             style={"width": '200px'}),
             ],
@@ -258,7 +264,7 @@ app.layout = html.Div(
         html.Div(
             style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
             children=[
-                html.Div(dcc.Input(id='input-on-submit3', type='text', placeholder="Phishing Account")),
+                html.Div(dcc.Input(id='input-on-submit3', type='text', placeholder="Phishing Account Address")),
                 html.Button(id='add-element-button2', n_clicks=0, children='Create graph',
                             style={"width": '200px'}),
             ],
@@ -390,15 +396,19 @@ def update_deanony_acc_weekly_plot(addr_1, addr_2):
     Output('graph-layout', 'children'),
     Input('add-element-button', 'n_clicks'),
     State('input-on-submit1', 'value'),
-    State('input-on-submit2', 'value')
 )
-def add_strategy_divison(n_clicks, first_addr, second_addr):
+def add_deanon_graph(n_clicks, deanon_addr):
     if n_clicks:
+        html_addr = ""
+        for html_path in glob.glob(os.path.join("assets", "deanon_label-pred_*")):
+            if str(addr2id[deanon_addr]) in html_path:
+                html_addr = html_path
+
         element = html.Div(
             style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
             children=[
-                html.Iframe(src="assets/deanon_2288_826827.html",
-                            style={"height": "512px", "width": "600px"}
+                html.Iframe(src=html_addr,
+                            style={"height": "512px", "width": "1000px"}
                             )
             ]
         )
@@ -436,11 +446,13 @@ def update_deanony_time_plot(freq, addr):
 )
 def add_strategy_divison(n_clicks, phis_addr):
     if n_clicks:
+        html_addr = os.path.join("assets", f"phish_label-pred_{addr2id[phis_addr]}.html")
+        print(html_addr)
         element = html.Div(
             style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
             children=[
-                html.Iframe(src="assets/phish_label_2294.html",
-                            style={"height": "512px", "width": "600px"}
+                html.Iframe(src=html_addr,
+                            style={"height": "512px", "width": "1000px"}
                             )
             ]
         )
