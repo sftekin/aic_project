@@ -277,6 +277,15 @@ app.layout = html.Div(
 
         html.Div(
             children=[
+                html.H2(children="Model Inference", className="sub-header"),
+                html.H3(children="De-anonymization Inference", className="subsub-header")
+            ],
+            className="subheader"
+        ),
+
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
+            children=[
                 dcc.Input(id="input-query", type="text", placeholder="Enter your query"),  # Input component for query
                 html.Div(id="output-query"),  # Output component for displaying query result
                 html.Button("Submit", id="submit-button"),  # Button component to trigger query processing
@@ -284,6 +293,14 @@ app.layout = html.Div(
         ),
 
         html.Div(
+            children=[
+                html.H3(children="Phishing Inference", className="subsub-header")
+            ],
+            className="subheader"
+        ),
+
+        html.Div(
+            style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
             children=[
                 dcc.Input(id="input-query2", type="text", placeholder="Enter your query"),  # Input component for query
                 html.Div(id="output-query2"),  # Output component for displaying query result
