@@ -1,0 +1,991 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+                <link href="lib/tom-select/tom-select.css" rel="stylesheet">
+                <script src="lib/tom-select/tom-select.complete.min.js"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1000px;
+                 height: 1000px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 1000px;
+                 height: 1000px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="594065">594065</option>
+                                
+                                    <option value="0">0</option>
+                                
+                                    <option value="28">28</option>
+                                
+                                    <option value="6196">6196</option>
+                                
+                                    <option value="18911">18911</option>
+                                
+                                    <option value="37284">37284</option>
+                                
+                                    <option value="38402">38402</option>
+                                
+                                    <option value="53243">53243</option>
+                                
+                                    <option value="58314">58314</option>
+                                
+                                    <option value="60899">60899</option>
+                                
+                                    <option value="63906">63906</option>
+                                
+                                    <option value="66970">66970</option>
+                                
+                                    <option value="68768">68768</option>
+                                
+                                    <option value="76081">76081</option>
+                                
+                                    <option value="76087">76087</option>
+                                
+                                    <option value="76096">76096</option>
+                                
+                                    <option value="103648">103648</option>
+                                
+                                    <option value="106618">106618</option>
+                                
+                                    <option value="109837">109837</option>
+                                
+                                    <option value="131650">131650</option>
+                                
+                                    <option value="131750">131750</option>
+                                
+                                    <option value="138485">138485</option>
+                                
+                                    <option value="150281">150281</option>
+                                
+                                    <option value="160720">160720</option>
+                                
+                                    <option value="171500">171500</option>
+                                
+                                    <option value="174961">174961</option>
+                                
+                                    <option value="179690">179690</option>
+                                
+                                    <option value="202619">202619</option>
+                                
+                                    <option value="208852">208852</option>
+                                
+                                    <option value="213229">213229</option>
+                                
+                                    <option value="237476">237476</option>
+                                
+                                    <option value="244836">244836</option>
+                                
+                                    <option value="249220">249220</option>
+                                
+                                    <option value="256130">256130</option>
+                                
+                                    <option value="259612">259612</option>
+                                
+                                    <option value="266061">266061</option>
+                                
+                                    <option value="276925">276925</option>
+                                
+                                    <option value="294151">294151</option>
+                                
+                                    <option value="294369">294369</option>
+                                
+                                    <option value="303634">303634</option>
+                                
+                                    <option value="312852">312852</option>
+                                
+                                    <option value="315795">315795</option>
+                                
+                                    <option value="315987">315987</option>
+                                
+                                    <option value="316165">316165</option>
+                                
+                                    <option value="317344">317344</option>
+                                
+                                    <option value="321271">321271</option>
+                                
+                                    <option value="328855">328855</option>
+                                
+                                    <option value="330435">330435</option>
+                                
+                                    <option value="333619">333619</option>
+                                
+                                    <option value="334095">334095</option>
+                                
+                                    <option value="334577">334577</option>
+                                
+                                    <option value="335119">335119</option>
+                                
+                                    <option value="338362">338362</option>
+                                
+                                    <option value="339848">339848</option>
+                                
+                                    <option value="342308">342308</option>
+                                
+                                    <option value="342441">342441</option>
+                                
+                                    <option value="354276">354276</option>
+                                
+                                    <option value="360267">360267</option>
+                                
+                                    <option value="363346">363346</option>
+                                
+                                    <option value="366644">366644</option>
+                                
+                                    <option value="371946">371946</option>
+                                
+                                    <option value="372448">372448</option>
+                                
+                                    <option value="400464">400464</option>
+                                
+                                    <option value="400859">400859</option>
+                                
+                                    <option value="405432">405432</option>
+                                
+                                    <option value="412038">412038</option>
+                                
+                                    <option value="419271">419271</option>
+                                
+                                    <option value="436487">436487</option>
+                                
+                                    <option value="446831">446831</option>
+                                
+                                    <option value="446865">446865</option>
+                                
+                                    <option value="452250">452250</option>
+                                
+                                    <option value="459484">459484</option>
+                                
+                                    <option value="465541">465541</option>
+                                
+                                    <option value="476970">476970</option>
+                                
+                                    <option value="489248">489248</option>
+                                
+                                    <option value="497184">497184</option>
+                                
+                                    <option value="506831">506831</option>
+                                
+                                    <option value="508821">508821</option>
+                                
+                                    <option value="520859">520859</option>
+                                
+                                    <option value="523203">523203</option>
+                                
+                                    <option value="530706">530706</option>
+                                
+                                    <option value="535783">535783</option>
+                                
+                                    <option value="547143">547143</option>
+                                
+                                    <option value="552916">552916</option>
+                                
+                                    <option value="554561">554561</option>
+                                
+                                    <option value="585112">585112</option>
+                                
+                                    <option value="589945">589945</option>
+                                
+                                    <option value="596542">596542</option>
+                                
+                                    <option value="609316">609316</option>
+                                
+                                    <option value="611602">611602</option>
+                                
+                                    <option value="618367">618367</option>
+                                
+                                    <option value="633209">633209</option>
+                                
+                                    <option value="634639">634639</option>
+                                
+                                    <option value="637698">637698</option>
+                                
+                                    <option value="637838">637838</option>
+                                
+                                    <option value="638658">638658</option>
+                                
+                                    <option value="640332">640332</option>
+                                
+                                    <option value="642072">642072</option>
+                                
+                                    <option value="656935">656935</option>
+                                
+                                    <option value="658450">658450</option>
+                                
+                                    <option value="664253">664253</option>
+                                
+                                    <option value="682839">682839</option>
+                                
+                                    <option value="683136">683136</option>
+                                
+                                    <option value="687774">687774</option>
+                                
+                                    <option value="687992">687992</option>
+                                
+                                    <option value="690181">690181</option>
+                                
+                                    <option value="695214">695214</option>
+                                
+                                    <option value="698951">698951</option>
+                                
+                                    <option value="699097">699097</option>
+                                
+                                    <option value="700408">700408</option>
+                                
+                                    <option value="707106">707106</option>
+                                
+                                    <option value="707108">707108</option>
+                                
+                                    <option value="721416">721416</option>
+                                
+                                    <option value="725888">725888</option>
+                                
+                                    <option value="730655">730655</option>
+                                
+                                    <option value="734367">734367</option>
+                                
+                                    <option value="738944">738944</option>
+                                
+                                    <option value="739494">739494</option>
+                                
+                                    <option value="742886">742886</option>
+                                
+                                    <option value="753410">753410</option>
+                                
+                                    <option value="761368">761368</option>
+                                
+                                    <option value="765724">765724</option>
+                                
+                                    <option value="767716">767716</option>
+                                
+                                    <option value="768047">768047</option>
+                                
+                                    <option value="784004">784004</option>
+                                
+                                    <option value="789204">789204</option>
+                                
+                                    <option value="803279">803279</option>
+                                
+                                    <option value="806818">806818</option>
+                                
+                                    <option value="812024">812024</option>
+                                
+                                    <option value="812143">812143</option>
+                                
+                                    <option value="814082">814082</option>
+                                
+                                    <option value="820343">820343</option>
+                                
+                                    <option value="820400">820400</option>
+                                
+                                    <option value="820814">820814</option>
+                                
+                                    <option value="822855">822855</option>
+                                
+                                    <option value="823700">823700</option>
+                                
+                                    <option value="826553">826553</option>
+                                
+                                    <option value="830042">830042</option>
+                                
+                                    <option value="834487">834487</option>
+                                
+                                    <option value="850757">850757</option>
+                                
+                                    <option value="859381">859381</option>
+                                
+                                    <option value="871035">871035</option>
+                                
+                                    <option value="874398">874398</option>
+                                
+                                    <option value="904240">904240</option>
+                                
+                                    <option value="910478">910478</option>
+                                
+                                    <option value="916201">916201</option>
+                                
+                                    <option value="921768">921768</option>
+                                
+                                    <option value="929827">929827</option>
+                                
+                                    <option value="933604">933604</option>
+                                
+                                    <option value="948360">948360</option>
+                                
+                                    <option value="951275">951275</option>
+                                
+                                    <option value="953048">953048</option>
+                                
+                                    <option value="953769">953769</option>
+                                
+                                    <option value="966988">966988</option>
+                                
+                                    <option value="972199">972199</option>
+                                
+                                    <option value="973358">973358</option>
+                                
+                                    <option value="974895">974895</option>
+                                
+                                    <option value="1019518">1019518</option>
+                                
+                                    <option value="1022252">1022252</option>
+                                
+                                    <option value="1026505">1026505</option>
+                                
+                                    <option value="1031071">1031071</option>
+                                
+                                    <option value="1033461">1033461</option>
+                                
+                                    <option value="1041958">1041958</option>
+                                
+                                    <option value="1043564">1043564</option>
+                                
+                                    <option value="1043927">1043927</option>
+                                
+                                    <option value="1059625">1059625</option>
+                                
+                                    <option value="1063716">1063716</option>
+                                
+                                    <option value="5706">5706</option>
+                                
+                                    <option value="12989">12989</option>
+                                
+                                    <option value="16846">16846</option>
+                                
+                                    <option value="19159">19159</option>
+                                
+                                    <option value="19227">19227</option>
+                                
+                                    <option value="50534">50534</option>
+                                
+                                    <option value="60109">60109</option>
+                                
+                                    <option value="78979">78979</option>
+                                
+                                    <option value="81863">81863</option>
+                                
+                                    <option value="102039">102039</option>
+                                
+                                    <option value="127073">127073</option>
+                                
+                                    <option value="129270">129270</option>
+                                
+                                    <option value="141963">141963</option>
+                                
+                                    <option value="143707">143707</option>
+                                
+                                    <option value="147042">147042</option>
+                                
+                                    <option value="148514">148514</option>
+                                
+                                    <option value="149936">149936</option>
+                                
+                                    <option value="199604">199604</option>
+                                
+                                    <option value="211881">211881</option>
+                                
+                                    <option value="235851">235851</option>
+                                
+                                    <option value="241102">241102</option>
+                                
+                                    <option value="255311">255311</option>
+                                
+                                    <option value="282638">282638</option>
+                                
+                                    <option value="283984">283984</option>
+                                
+                                    <option value="289754">289754</option>
+                                
+                                    <option value="319400">319400</option>
+                                
+                                    <option value="319798">319798</option>
+                                
+                                    <option value="322433">322433</option>
+                                
+                                    <option value="328412">328412</option>
+                                
+                                    <option value="335668">335668</option>
+                                
+                                    <option value="336214">336214</option>
+                                
+                                    <option value="339736">339736</option>
+                                
+                                    <option value="347401">347401</option>
+                                
+                                    <option value="351279">351279</option>
+                                
+                                    <option value="363616">363616</option>
+                                
+                                    <option value="365440">365440</option>
+                                
+                                    <option value="365785">365785</option>
+                                
+                                    <option value="367032">367032</option>
+                                
+                                    <option value="370686">370686</option>
+                                
+                                    <option value="383198">383198</option>
+                                
+                                    <option value="385487">385487</option>
+                                
+                                    <option value="390797">390797</option>
+                                
+                                    <option value="399299">399299</option>
+                                
+                                    <option value="404029">404029</option>
+                                
+                                    <option value="413153">413153</option>
+                                
+                                    <option value="415104">415104</option>
+                                
+                                    <option value="421086">421086</option>
+                                
+                                    <option value="428360">428360</option>
+                                
+                                    <option value="431857">431857</option>
+                                
+                                    <option value="433653">433653</option>
+                                
+                                    <option value="442531">442531</option>
+                                
+                                    <option value="460128">460128</option>
+                                
+                                    <option value="469905">469905</option>
+                                
+                                    <option value="470737">470737</option>
+                                
+                                    <option value="473315">473315</option>
+                                
+                                    <option value="482058">482058</option>
+                                
+                                    <option value="482519">482519</option>
+                                
+                                    <option value="496106">496106</option>
+                                
+                                    <option value="507485">507485</option>
+                                
+                                    <option value="513723">513723</option>
+                                
+                                    <option value="518494">518494</option>
+                                
+                                    <option value="526240">526240</option>
+                                
+                                    <option value="563203">563203</option>
+                                
+                                    <option value="571917">571917</option>
+                                
+                                    <option value="586099">586099</option>
+                                
+                                    <option value="595024">595024</option>
+                                
+                                    <option value="595300">595300</option>
+                                
+                                    <option value="600031">600031</option>
+                                
+                                    <option value="600706">600706</option>
+                                
+                                    <option value="609292">609292</option>
+                                
+                                    <option value="613246">613246</option>
+                                
+                                    <option value="626069">626069</option>
+                                
+                                    <option value="638520">638520</option>
+                                
+                                    <option value="638805">638805</option>
+                                
+                                    <option value="647410">647410</option>
+                                
+                                    <option value="660967">660967</option>
+                                
+                                    <option value="661644">661644</option>
+                                
+                                    <option value="667242">667242</option>
+                                
+                                    <option value="677639">677639</option>
+                                
+                                    <option value="679561">679561</option>
+                                
+                                    <option value="679744">679744</option>
+                                
+                                    <option value="681194">681194</option>
+                                
+                                    <option value="689737">689737</option>
+                                
+                                    <option value="692057">692057</option>
+                                
+                                    <option value="710390">710390</option>
+                                
+                                    <option value="731445">731445</option>
+                                
+                                    <option value="748375">748375</option>
+                                
+                                    <option value="753642">753642</option>
+                                
+                                    <option value="757203">757203</option>
+                                
+                                    <option value="757940">757940</option>
+                                
+                                    <option value="761164">761164</option>
+                                
+                                    <option value="765127">765127</option>
+                                
+                                    <option value="767096">767096</option>
+                                
+                                    <option value="780135">780135</option>
+                                
+                                    <option value="788900">788900</option>
+                                
+                                    <option value="789494">789494</option>
+                                
+                                    <option value="794854">794854</option>
+                                
+                                    <option value="804815">804815</option>
+                                
+                                    <option value="806040">806040</option>
+                                
+                                    <option value="806154">806154</option>
+                                
+                                    <option value="809978">809978</option>
+                                
+                                    <option value="818000">818000</option>
+                                
+                                    <option value="828618">828618</option>
+                                
+                                    <option value="843328">843328</option>
+                                
+                                    <option value="844547">844547</option>
+                                
+                                    <option value="844672">844672</option>
+                                
+                                    <option value="844863">844863</option>
+                                
+                                    <option value="850705">850705</option>
+                                
+                                    <option value="862212">862212</option>
+                                
+                                    <option value="871537">871537</option>
+                                
+                                    <option value="878079">878079</option>
+                                
+                                    <option value="884309">884309</option>
+                                
+                                    <option value="899800">899800</option>
+                                
+                                    <option value="935746">935746</option>
+                                
+                                    <option value="942029">942029</option>
+                                
+                                    <option value="953205">953205</option>
+                                
+                                    <option value="958697">958697</option>
+                                
+                                    <option value="969164">969164</option>
+                                
+                                    <option value="971097">971097</option>
+                                
+                                    <option value="975870">975870</option>
+                                
+                                    <option value="1001173">1001173</option>
+                                
+                                    <option value="1012451">1012451</option>
+                                
+                                    <option value="1015211">1015211</option>
+                                
+                                    <option value="1047272">1047272</option>
+                                
+                                    <option value="1053774">1053774</option>
+                                
+                                    <option value="1090487">1090487</option>
+                                
+                                    <option value="41645">41645</option>
+                                
+                                    <option value="44202">44202</option>
+                                
+                                    <option value="52905">52905</option>
+                                
+                                    <option value="183506">183506</option>
+                                
+                                    <option value="286493">286493</option>
+                                
+                                    <option value="298453">298453</option>
+                                
+                                    <option value="384736">384736</option>
+                                
+                                    <option value="402283">402283</option>
+                                
+                                    <option value="544473">544473</option>
+                                
+                                    <option value="548384">548384</option>
+                                
+                                    <option value="554593">554593</option>
+                                
+                                    <option value="771989">771989</option>
+                                
+                                    <option value="778545">778545</option>
+                                
+                                    <option value="805463">805463</option>
+                                
+                                    <option value="838747">838747</option>
+                                
+                                    <option value="855782">855782</option>
+                                
+                                    <option value="890724">890724</option>
+                                
+                                    <option value="898017">898017</option>
+                                
+                                    <option value="908071">908071</option>
+                                
+                                    <option value="909964">909964</option>
+                                
+                                    <option value="923178">923178</option>
+                                
+                                    <option value="993533">993533</option>
+                                
+                                    <option value="1002004">1002004</option>
+                                
+                                    <option value="1027544">1027544</option>
+                                
+                                    <option value="1031736">1031736</option>
+                                
+                                    <option value="1065058">1065058</option>
+                                
+                                    <option value="28554">28554</option>
+                                
+                                    <option value="84154">84154</option>
+                                
+                                    <option value="202184">202184</option>
+                                
+                                    <option value="219389">219389</option>
+                                
+                                    <option value="244870">244870</option>
+                                
+                                    <option value="316292">316292</option>
+                                
+                                    <option value="383754">383754</option>
+                                
+                                    <option value="450629">450629</option>
+                                
+                                    <option value="635897">635897</option>
+                                
+                                    <option value="687089">687089</option>
+                                
+                                    <option value="723525">723525</option>
+                                
+                                    <option value="766063">766063</option>
+                                
+                                    <option value="800516">800516</option>
+                                
+                                    <option value="979750">979750</option>
+                                
+                                    <option value="994577">994577</option>
+                                
+                                    <option value="1004198">1004198</option>
+                                
+                                    <option value="1081013">1081013</option>
+                                
+                                    <option value="446391">446391</option>
+                                
+                                    <option value="521954">521954</option>
+                                
+                                    <option value="881722">881722</option>
+                                
+                                    <option value="41580">41580</option>
+                                
+                                    <option value="168887">168887</option>
+                                
+                                    <option value="246779">246779</option>
+                                
+                                    <option value="325584">325584</option>
+                                
+                                    <option value="495586">495586</option>
+                                
+                                    <option value="887475">887475</option>
+                                
+                                    <option value="892079">892079</option>
+                                
+                                    <option value="909487">909487</option>
+                                
+                                    <option value="755111">755111</option>
+                                
+                                    <option value="155077">155077</option>
+                                
+                                    <option value="30738">30738</option>
+                                
+                                    <option value="47785">47785</option>
+                                
+                                    <option value="147190">147190</option>
+                                
+                                    <option value="291392">291392</option>
+                                
+                                    <option value="302493">302493</option>
+                                
+                                    <option value="572255">572255</option>
+                                
+                                    <option value="662441">662441</option>
+                                
+                                    <option value="776925">776925</option>
+                                
+                                    <option value="897555">897555</option>
+                                
+                                    <option value="159911">159911</option>
+                                
+                                    <option value="350987">350987</option>
+                                
+                                    <option value="360668">360668</option>
+                                
+                                    <option value="478351">478351</option>
+                                
+                                    <option value="748045">748045</option>
+                                
+                                    <option value="60464">60464</option>
+                                
+                                    <option value="167535">167535</option>
+                                
+                                    <option value="371182">371182</option>
+                                
+                                    <option value="910459">910459</option>
+                                
+                                    <option value="1073075">1073075</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "orangered", "id": 594065, "label": "0.963", "shape": "dot", "size": 10, "title": "0x8ac5c1cbafc564fbd01ee4b116dea85e6a593ab4"}, {"color": "#97c2fc", "id": 0, "label": 0, "shape": "square", "size": 10, "title": "0x0000000000000000000000000000000000000000"}, {"color": "#97c2fc", "id": 28, "label": 28, "shape": "square", "size": 10, "title": "0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e"}, {"color": "#97c2fc", "id": 6196, "label": 6196, "shape": "dot", "size": 10, "title": "0x00de4b13153673bcae2616b67bf822500d325fc3"}, {"color": "black", "id": 18911, "label": 18911, "shape": "dot", "size": 10, "title": "0x03c823e96f6964076c118395f08a2d7edf0f8a8c"}, {"color": "#97c2fc", "id": 37284, "label": 37284, "shape": "square", "size": 10, "title": "0x080bf510fcbf18b91105470639e9561022937712"}, {"color": "#97c2fc", "id": 38402, "label": 38402, "shape": "square", "size": 10, "title": "0x084b1c3c81545d370f3634392de611caabff8148"}, {"color": "#97c2fc", "id": 53243, "label": 53243, "shape": "square", "size": 10, "title": "0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e"}, {"color": "#97c2fc", "id": 58314, "label": 58314, "shape": "square", "size": 10, "title": "0x0cec1a9154ff802e7934fc916ed7ca50bde6844e"}, {"color": "#97c2fc", "id": 60899, "label": 60899, "shape": "square", "size": 10, "title": "0x0d8775f648430679a709e98d2b0cb6250d2887ef"}, {"color": "#97c2fc", "id": 63906, "label": 63906, "shape": "square", "size": 10, "title": "0x0e3a2a1f2146d86a604adc220b4967a898d7fe07"}, {"color": "#97c2fc", "id": 66970, "label": 66970, "shape": "square", "size": 10, "title": "0x0ef1b8a0e726fc3948e15b23993015eb1627f210"}, {"color": "#97c2fc", "id": 68768, "label": 68768, "shape": "square", "size": 10, "title": "0x0f5d2fb29fb7d3cfee444a200298f468908cc942"}, {"color": "#97c2fc", "id": 76081, "label": 76081, "shape": "square", "size": 10, "title": "0x111111111117dc0aa78b770fa6a738034120c302"}, {"color": "#97c2fc", "id": 76087, "label": 76087, "shape": "square", "size": 10, "title": "0x111111125434b319222cdbf8c261674adb56f3ae"}, {"color": "#97c2fc", "id": 76096, "label": 76096, "shape": "square", "size": 10, "title": "0x11111254369792b2ca5d084ab5eea397ca8fa48b"}, {"color": "#97c2fc", "id": 103648, "label": 103648, "shape": "square", "size": 10, "title": "0x1776e1f26f98b1a5df9cd347953a26dd3cb46671"}, {"color": "#97c2fc", "id": 106618, "label": 106618, "shape": "square", "size": 10, "title": "0x1824df8d751704fa10fa371d62a37f9b8772ab90"}, {"color": "#97c2fc", "id": 109837, "label": 109837, "shape": "square", "size": 10, "title": "0x18e35a2631be6caccf0e9e8ebbe1bfdf95bb2527"}, {"color": "#97c2fc", "id": 131650, "label": 131650, "shape": "square", "size": 10, "title": "0x1dfe7ca09e99d10835bf73044a23b73fc20623df"}, {"color": "#97c2fc", "id": 131750, "label": 131750, "shape": "square", "size": 10, "title": "0x1e0447b19bb6ecfdae1e4ae1694b0c3659614e4e"}, {"color": "#97c2fc", "id": 138485, "label": 138485, "shape": "square", "size": 10, "title": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"}, {"color": "#97c2fc", "id": 150281, "label": 150281, "shape": "square", "size": 10, "title": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"}, {"color": "#97c2fc", "id": 160720, "label": 160720, "shape": "square", "size": 10, "title": "0x24e2b1d415e6e0d04042eaa45dc2a08fc33ca6cd"}, {"color": "#97c2fc", "id": 171500, "label": 171500, "shape": "square", "size": 10, "title": "0x27658c5556a9a57f96e69bbf6d3b8016f001a785"}, {"color": "#97c2fc", "id": 174961, "label": 174961, "shape": "square", "size": 10, "title": "0x283af0b28c62c092c9727f1ee09c02ca627eb7f5"}, {"color": "#97c2fc", "id": 179690, "label": 179690, "shape": "square", "size": 10, "title": "0x295685c8fe08d8192981d21ea1fe856a07443920"}, {"color": "#97c2fc", "id": 202619, "label": 202619, "shape": "square", "size": 10, "title": "0x2ec255797fef7669fa243509b7a599121148ffba"}, {"color": "#97c2fc", "id": 208852, "label": 208852, "shape": "square", "size": 10, "title": "0x3038045cd883abff0c6eea4b1954843c0fa5a735"}, {"color": "#97c2fc", "id": 213229, "label": 213229, "shape": "square", "size": 10, "title": "0x314159265dd8dbb310642f98f50c066173c1259b"}, {"color": "#97c2fc", "id": 237476, "label": 237476, "shape": "square", "size": 10, "title": "0x36f3fd68e7325a35eb768f1aedaae9ea0689d723"}, {"color": "#97c2fc", "id": 244836, "label": 244836, "shape": "square", "size": 10, "title": "0x38a795580d0f687e399913a00ddef6a17612c722"}, {"color": "#97c2fc", "id": 249220, "label": 249220, "shape": "square", "size": 10, "title": "0x39aa39c021dfbae8fac545936693ac917d5e7563"}, {"color": "#97c2fc", "id": 256130, "label": 256130, "shape": "square", "size": 10, "title": "0x3b484b82567a09e2588a13d54d032153f0c0aee0"}, {"color": "#97c2fc", "id": 259612, "label": "0.946", "shape": "dot", "size": 10, "title": "0x3c1715cfddd107776e0d2e91a45526f2172e11e5"}, {"color": "#97c2fc", "id": 266061, "label": 266061, "shape": "square", "size": 10, "title": "0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b"}, {"color": "#97c2fc", "id": 276925, "label": 276925, "shape": "square", "size": 10, "title": "0x401f6c983ea34274ec46f84d70b31c151321188b"}, {"color": "#97c2fc", "id": 294151, "label": 294151, "shape": "square", "size": 10, "title": "0x443d2f2755db5942601fa062cc248aaa153313d3"}, {"color": "#97c2fc", "id": 294369, "label": 294369, "shape": "dot", "size": 10, "title": "0x444a667228105977876612266e7aa1c82b0b559c"}, {"color": "#97c2fc", "id": 303634, "label": 303634, "shape": "square", "size": 10, "title": "0x4678f0a6958e4d2bc4f1baf7bc52e8f3564f3fe4"}, {"color": "#97c2fc", "id": 312852, "label": 312852, "shape": "square", "size": 10, "title": "0x48acc9ccee8b3581325fdf5171a997b02e95f781"}, {"color": "#97c2fc", "id": 315795, "label": 315795, "shape": "square", "size": 10, "title": "0x495f947276749ce646f68ac8c248420045cb7b5e"}, {"color": "#97c2fc", "id": 315987, "label": 315987, "shape": "square", "size": 10, "title": "0x496c67a4ced9c453a60f3166ab4b329870c8e355"}, {"color": "#97c2fc", "id": 316165, "label": 316165, "shape": "square", "size": 10, "title": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"}, {"color": "#97c2fc", "id": 317344, "label": "0.920", "shape": "dot", "size": 10, "title": "0x49bc6a8db83cdb392ef76952b816a4dcf7e951d4"}, {"color": "#97c2fc", "id": 321271, "label": 321271, "shape": "square", "size": 10, "title": "0x4aa817c6f383c8e8ae77301d18ce48efb16fd2be"}, {"color": "#97c2fc", "id": 328855, "label": 328855, "shape": "square", "size": 10, "title": "0x4c6ec08cf3fc987c6c4beb03184d335a2dfc4042"}, {"color": "#97c2fc", "id": 330435, "label": 330435, "shape": "square", "size": 10, "title": "0x4ccc2339f87f6c59c6893e1a678c2266ca58dc72"}, {"color": "#97c2fc", "id": 333619, "label": 333619, "shape": "square", "size": 10, "title": "0x4d8679083f77a44449162a0a7ce500f77ca406b8"}, {"color": "#97c2fc", "id": 334095, "label": 334095, "shape": "square", "size": 10, "title": "0x4da27a545c0c5b758a6ba100e3a049001de870f5"}, {"color": "#97c2fc", "id": 334577, "label": 334577, "shape": "square", "size": 10, "title": "0x4dbd4fc535ac27206064b68ffcf827b0a60bab3f"}, {"color": "#97c2fc", "id": 335119, "label": 335119, "shape": "square", "size": 10, "title": "0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5"}, {"color": "#97c2fc", "id": 338362, "label": 338362, "shape": "square", "size": 10, "title": "0x4e9d7f37eadc6fef64b5f5dccc4deb6224667677"}, {"color": "#97c2fc", "id": 339848, "label": 339848, "shape": "square", "size": 10, "title": "0x4ef40d1bf0983899892946830abf99eca2dbc5ce"}, {"color": "#97c2fc", "id": 342308, "label": 342308, "shape": "square", "size": 10, "title": "0x4f833a24e1f95d70f028921e27040ca56e09ab0b"}, {"color": "#97c2fc", "id": 342441, "label": 342441, "shape": "square", "size": 10, "title": "0x4f8ad938eba0cd19155a835f617317a6e788c868"}, {"color": "#97c2fc", "id": 354276, "label": 354276, "shape": "square", "size": 10, "title": "0x524cab2ec69124574082676e6f654a18df49a048"}, {"color": "#97c2fc", "id": 360267, "label": 360267, "shape": "square", "size": 10, "title": "0x53b04999c1ff2d77fcdde98935bb936a67209e4c"}, {"color": "#97c2fc", "id": 363346, "label": 363346, "shape": "square", "size": 10, "title": "0x5468a1dc173652ee28d249c271fa9933144746b1"}, {"color": "#97c2fc", "id": 366644, "label": 366644, "shape": "square", "size": 10, "title": "0x5533ed0a3b83f70c3c4a1f69ef5546d3d4713e44"}, {"color": "#97c2fc", "id": 371946, "label": 371946, "shape": "square", "size": 10, "title": "0x5671141012287e18eac5d31cab3f81a79516d906"}, {"color": "#97c2fc", "id": 372448, "label": "0.935", "shape": "dot", "size": 10, "title": "0x56903e8ffcc6d76e42cde81c60f5653ea826c6bc"}, {"color": "#97c2fc", "id": 400464, "label": 400464, "shape": "square", "size": 10, "title": "0x5d22045daceab03b158031ecb7d9d06fad24609b"}, {"color": "#97c2fc", "id": 400859, "label": 400859, "shape": "square", "size": 10, "title": "0x5d3a536e4d6dbd6114cc1ead35777bab948e3643"}, {"color": "#97c2fc", "id": 405432, "label": 405432, "shape": "square", "size": 10, "title": "0x5e4be8bc9637f0eaa1a755019e06a68ce081d58f"}, {"color": "#97c2fc", "id": 412038, "label": 412038, "shape": "square", "size": 10, "title": "0x5fdcca53617f4d2b9134b29090c87d01058e27e9"}, {"color": "#97c2fc", "id": 419271, "label": 419271, "shape": "square", "size": 10, "title": "0x61935cbdd02287b511119ddb11aeb42f1593b7ef"}, {"color": "#97c2fc", "id": 436487, "label": 436487, "shape": "dot", "size": 10, "title": "0x65a0ac5be489c2e5d3a41e1b96ab726978810748"}, {"color": "#97c2fc", "id": 446831, "label": 446831, "shape": "square", "size": 10, "title": "0x6810e776880c02933d47db1b9fc05908e5386b96"}, {"color": "#97c2fc", "id": 446865, "label": 446865, "shape": "square", "size": 10, "title": "0x68132eb4bfd84b2d6a23ec4fb1b106f5c8574f2d"}, {"color": "#97c2fc", "id": 452250, "label": 452250, "shape": "square", "size": 10, "title": "0x6958f5e95332d93d21af0d7b9ca85b8212fee0a5"}, {"color": "#97c2fc", "id": 459484, "label": 459484, "shape": "square", "size": 10, "title": "0x6b175474e89094c44da98b954eedeac495271d0f"}, {"color": "#97c2fc", "id": 465541, "label": 465541, "shape": "square", "size": 10, "title": "0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e"}, {"color": "#97c2fc", "id": 476970, "label": 476970, "shape": "square", "size": 10, "title": "0x6f400810b62df8e13fded51be75ff5393eaa841f"}, {"color": "#97c2fc", "id": 489248, "label": 489248, "shape": "square", "size": 10, "title": "0x722122df12d4e14e13ac3b6895a86e84145b6967"}, {"color": "#97c2fc", "id": 497184, "label": 497184, "shape": "square", "size": 10, "title": "0x73feaa1ee314f8c655e354234017be2193c9e24e"}, {"color": "#97c2fc", "id": 506831, "label": 506831, "shape": "square", "size": 10, "title": "0x76481caa104b5f6bccb540dae4cefaf1c398ebea"}, {"color": "#97c2fc", "id": 508821, "label": "0.971", "shape": "dot", "size": 10, "title": "0x76c1a5324eea270b0a0dc8b50315cc217799749a"}, {"color": "#97c2fc", "id": 520859, "label": 520859, "shape": "square", "size": 10, "title": "0x79986af15539de2db9a5086382daeda917a9cf0c"}, {"color": "#97c2fc", "id": 523203, "label": 523203, "shape": "square", "size": 10, "title": "0x7a250d5630b4cf539739df2c5dacb4c659f2488d"}, {"color": "#97c2fc", "id": 530706, "label": 530706, "shape": "square", "size": 10, "title": "0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"}, {"color": "#97c2fc", "id": 535783, "label": 535783, "shape": "square", "size": 10, "title": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"}, {"color": "#97c2fc", "id": 547143, "label": 547143, "shape": "square", "size": 10, "title": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"}, {"color": "#97c2fc", "id": 552916, "label": 552916, "shape": "square", "size": 10, "title": "0x812b40c2ca7fabbac756475593fc8b1c313434fa"}, {"color": "#97c2fc", "id": 554561, "label": 554561, "shape": "square", "size": 10, "title": "0x818e6fecd516ecc3849daf6845e3ec868087b755"}, {"color": "#97c2fc", "id": 585112, "label": 585112, "shape": "square", "size": 10, "title": "0x88ad09518695c6c3712ac10a214be5109a655671"}, {"color": "#97c2fc", "id": 589945, "label": 589945, "shape": "square", "size": 10, "title": "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"}, {"color": "#97c2fc", "id": 596542, "label": 596542, "shape": "square", "size": 10, "title": "0x8b5967b5e370666acce559e7b7bec52c63ef0f89"}, {"color": "#97c2fc", "id": 609316, "label": 609316, "shape": "square", "size": 10, "title": "0x8e5660b4ab70168b5a6feea0e0315cb49c8cd539"}, {"color": "#97c2fc", "id": 611602, "label": 611602, "shape": "square", "size": 10, "title": "0x8ee06fc33e3aff86ca4c024bb521d57feaaf414b"}, {"color": "#97c2fc", "id": 618367, "label": 618367, "shape": "square", "size": 10, "title": "0x9070832cf729a5150bb26825c2927e7d343eabd9"}, {"color": "#97c2fc", "id": 633209, "label": 633209, "shape": "square", "size": 10, "title": "0x93f2a75d771628856f37f256da95e99ea28aafbe"}, {"color": "#97c2fc", "id": 634639, "label": 634639, "shape": "square", "size": 10, "title": "0x944644ea989ec64c2ab9ef341d383cef586a5777"}, {"color": "#97c2fc", "id": 637698, "label": 637698, "shape": "square", "size": 10, "title": "0x9500b696f00ae82ca97d06379cf0a2b60b467040"}, {"color": "#97c2fc", "id": 637838, "label": 637838, "shape": "square", "size": 10, "title": "0x9509665d015bfe3c77aa5ad6ca20c8afa1d98989"}, {"color": "#97c2fc", "id": 638658, "label": 638658, "shape": "square", "size": 10, "title": "0x9539803b8e570f8eafd8f7f806d05cbcbd3f8c8f"}, {"color": "#97c2fc", "id": 640332, "label": 640332, "shape": "square", "size": 10, "title": "0x959e104e1a4db6317fa58f8295f586e1a978c297"}, {"color": "#97c2fc", "id": 642072, "label": 642072, "shape": "square", "size": 10, "title": "0x960b236a07cf122663c4303350609a66a7b288c0"}, {"color": "#97c2fc", "id": 656935, "label": 656935, "shape": "dot", "size": 10, "title": "0x998ac0a438574a289d5bb0489c7c5a1e0c9982ba"}, {"color": "#97c2fc", "id": 658450, "label": 658450, "shape": "square", "size": 10, "title": "0x99c9fc46f92e8a1c0dec1b1747d010903e884be1"}, {"color": "#97c2fc", "id": 664253, "label": 664253, "shape": "square", "size": 10, "title": "0x9b27dd5bb15d42dc224fcd0b7caebbe16161df42"}, {"color": "#97c2fc", "id": 682839, "label": 682839, "shape": "square", "size": 10, "title": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2"}, {"color": "#97c2fc", "id": 683136, "label": 683136, "shape": "square", "size": 10, "title": "0x9fa160f92a10b431f255bf1a70a1c1e5808e5128"}, {"color": "#97c2fc", "id": 687774, "label": 687774, "shape": "square", "size": 10, "title": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}, {"color": "#97c2fc", "id": 687992, "label": 687992, "shape": "square", "size": 10, "title": "0xa0c68c638235ee32657e8f720a23cec1bfc77c77"}, {"color": "#97c2fc", "id": 690181, "label": 690181, "shape": "square", "size": 10, "title": "0xa1484c3aa22a66c62b77e0ae78e15258bd0cb711"}, {"color": "#97c2fc", "id": 695214, "label": 695214, "shape": "square", "size": 10, "title": "0xa26e80e7dea86279c6d778d702cc413e6cffa777"}, {"color": "#97c2fc", "id": 698951, "label": 698951, "shape": "square", "size": 10, "title": "0xa354f35829ae975e850e23e9615b11da1b3dc4de"}, {"color": "#97c2fc", "id": 699097, "label": 699097, "shape": "square", "size": 10, "title": "0xa35dce3e0e6ceb67a30b8d7f4aee721c949b5970"}, {"color": "#97c2fc", "id": 700408, "label": 700408, "shape": "square", "size": 10, "title": "0xa3ac9844514b96bb502627ca9dceb57c4be289e3"}, {"color": "#97c2fc", "id": 707106, "label": 707106, "shape": "square", "size": 10, "title": "0xa5407eae9ba41422680e2e00537571bcc53efbfd"}, {"color": "#97c2fc", "id": 707108, "label": 707108, "shape": "square", "size": 10, "title": "0xa5409ec958c83c3f309868babaca7c86dcb077c1"}, {"color": "#97c2fc", "id": 721416, "label": 721416, "shape": "square", "size": 10, "title": "0xa8b39829ce2246f89b31c013b8cde15506fb9a76"}, {"color": "#97c2fc", "id": 725888, "label": 725888, "shape": "square", "size": 10, "title": "0xa9c441acadeafdf2db379d70f11d5f1b98736780"}, {"color": "#97c2fc", "id": 730655, "label": 730655, "shape": "square", "size": 10, "title": "0xaae28eb5ef9e9e40e50506f138db53ec7e0b78de"}, {"color": "#97c2fc", "id": 734367, "label": 734367, "shape": "square", "size": 10, "title": "0xabc207502ea88d9bca29b95cd2eee5f0d7936418"}, {"color": "#97c2fc", "id": 738944, "label": 738944, "shape": "square", "size": 10, "title": "0xacd43e627e64355f1861cec6d3a6688b31a6f952"}, {"color": "#97c2fc", "id": 739494, "label": 739494, "shape": "square", "size": 10, "title": "0xacf651aad1cbb0fd2c7973e2510d6f63b7e440c9"}, {"color": "#97c2fc", "id": 742886, "label": 742886, "shape": "square", "size": 10, "title": "0xadca0dd4729c8ba3acf3e99f3a9f471ef37b6825"}, {"color": "#97c2fc", "id": 753410, "label": 753410, "shape": "square", "size": 10, "title": "0xb04239b53806ab31141e6cd47c63fb3480cac908"}, {"color": "#97c2fc", "id": 761368, "label": 761368, "shape": "square", "size": 10, "title": "0xb228d7b6e099618ca71bd5522b3a8c3788a8f172"}, {"color": "#97c2fc", "id": 765724, "label": 765724, "shape": "square", "size": 10, "title": "0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407"}, {"color": "#97c2fc", "id": 767716, "label": 767716, "shape": "square", "size": 10, "title": "0xb3a87172f555ae2a2ab79be60b336d2f7d0187f0"}, {"color": "#97c2fc", "id": 768047, "label": 768047, "shape": "square", "size": 10, "title": "0xb3bca6f5052c7e24726b44da7403b56a8a1b98f8"}, {"color": "#97c2fc", "id": 784004, "label": 784004, "shape": "square", "size": 10, "title": "0xb7896fce748396ecfc240f5a0d3cc92ca42d7d84"}, {"color": "#97c2fc", "id": 789204, "label": 789204, "shape": "square", "size": 10, "title": "0xb8c3b7a2a618c552c23b1e4701109a9e756bab67"}, {"color": "#97c2fc", "id": 803279, "label": 803279, "shape": "square", "size": 10, "title": "0xbc006932b24011d315759f17cfc8745c9df48c82"}, {"color": "#97c2fc", "id": 806818, "label": 806818, "shape": "square", "size": 10, "title": "0xbcd7254a1d759efa08ec7c3291b2e85c5dcc12ce"}, {"color": "#97c2fc", "id": 812024, "label": "0.904", "shape": "dot", "size": 10, "title": "0xbe13d333742d8ba02a3222a3ba394325998ceec4"}, {"color": "#97c2fc", "id": 812143, "label": 812143, "shape": "square", "size": 10, "title": "0xbe1a33519f586a4c8aa37525163df8d67997016f"}, {"color": "#97c2fc", "id": 814082, "label": "0.865", "shape": "dot", "size": 10, "title": "0xbe924ceb7228c23d167d6a6349e93054c67883e2"}, {"color": "#97c2fc", "id": 820343, "label": 820343, "shape": "square", "size": 10, "title": "0xc00e94cb662c3520282e6f5717214004a7f26888"}, {"color": "#97c2fc", "id": 820400, "label": 820400, "shape": "square", "size": 10, "title": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f"}, {"color": "#97c2fc", "id": 820814, "label": 820814, "shape": "square", "size": 10, "title": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"}, {"color": "#97c2fc", "id": 822855, "label": 822855, "shape": "square", "size": 10, "title": "0xc0a302e6ad8eccc4d7a6c1514f8671d6b79269c7"}, {"color": "#97c2fc", "id": 823700, "label": 823700, "shape": "square", "size": 10, "title": "0xc0da01a04c3f3e0be433606045bb7017a7323e38"}, {"color": "#97c2fc", "id": 826553, "label": 826553, "shape": "square", "size": 10, "title": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"}, {"color": "#97c2fc", "id": 830042, "label": 830042, "shape": "square", "size": 10, "title": "0xc25a3a3b969415c80451098fa907ec722572917f"}, {"color": "#97c2fc", "id": 834487, "label": 834487, "shape": "square", "size": 10, "title": "0xc36442b4a4522e871399cd717abdd847ab11fe88"}, {"color": "#97c2fc", "id": 850757, "label": 850757, "shape": "square", "size": 10, "title": "0xc73e0383f3aff3215e6f04b0331d58cecf0ab849"}, {"color": "#97c2fc", "id": 859381, "label": 859381, "shape": "square", "size": 10, "title": "0xc944e90c64b2c07662a292be6244bdf05cda44a7"}, {"color": "#97c2fc", "id": 871035, "label": 871035, "shape": "dot", "size": 10, "title": "0xcc00bef00fda2e8a75d3c3ea76148f17d372c31c"}, {"color": "#97c2fc", "id": 874398, "label": 874398, "shape": "square", "size": 10, "title": "0xccc8cb5229b0ac8069c51fd58367fd1e622afd97"}, {"color": "#97c2fc", "id": 904240, "label": 904240, "shape": "square", "size": 10, "title": "0xd3ddccdd3b25a8a7423b5bee360a42146eb4baf3"}, {"color": "#97c2fc", "id": 910478, "label": 910478, "shape": "square", "size": 10, "title": "0xd5524179cb7ae012f5b642c1d6d700bbaa76b96b"}, {"color": "#97c2fc", "id": 916201, "label": 916201, "shape": "square", "size": 10, "title": "0xd6ad7a6750a7593e092a9b218d66c0a814a3436e"}, {"color": "#97c2fc", "id": 921768, "label": 921768, "shape": "square", "size": 10, "title": "0xd7fbd072cf99146abcffa0ff4acf51b866a70433"}, {"color": "#97c2fc", "id": 929827, "label": 929827, "shape": "square", "size": 10, "title": "0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f"}, {"color": "#97c2fc", "id": 933604, "label": 933604, "shape": "square", "size": 10, "title": "0xdac17f958d2ee523a2206206994597c13d831ec7"}, {"color": "#97c2fc", "id": 948360, "label": 948360, "shape": "square", "size": 10, "title": "0xde3e5a990bce7fc60a6f017e7c4a95fc4939299e"}, {"color": "#97c2fc", "id": 951275, "label": 951275, "shape": "square", "size": 10, "title": "0xdef1c0ded9bec7f1a1670819833240f027b25eff"}, {"color": "#97c2fc", "id": 953048, "label": 953048, "shape": "square", "size": 10, "title": "0xdf5b5ee15cc96ba7d0cb6bd9b2c0fc4417ab6445"}, {"color": "#97c2fc", "id": 953769, "label": 953769, "shape": "square", "size": 10, "title": "0xdf869fad6db91f437b59f1edefab319493d4c4ce"}, {"color": "#97c2fc", "id": 966988, "label": 966988, "shape": "square", "size": 10, "title": "0xe295ad71242373c37c5fda7b57f26f9ea1088afe"}, {"color": "#97c2fc", "id": 972199, "label": 972199, "shape": "square", "size": 10, "title": "0xe3d0fe9b7e0b951663267a3ed1e6577f6f79757e"}, {"color": "#97c2fc", "id": 973358, "label": 973358, "shape": "square", "size": 10, "title": "0xe41d2489571d322189246dafa5ebde1f4699f498"}, {"color": "#97c2fc", "id": 974895, "label": 974895, "shape": "square", "size": 10, "title": "0xe479dfd9664c693b2e2992300930b00bfde08233"}, {"color": "#97c2fc", "id": 1019518, "label": 1019518, "shape": "square", "size": 10, "title": "0xef0881ec094552b2e128cf945ef17a6752b4ec5d"}, {"color": "#97c2fc", "id": 1022252, "label": 1022252, "shape": "dot", "size": 10, "title": "0xefac8b22c75601eff1a0f1f8d4ca3be7b590fc87"}, {"color": "#97c2fc", "id": 1026505, "label": 1026505, "shape": "square", "size": 10, "title": "0xf0ad5cad05e10572efceb849f6ff0c68f9700455"}, {"color": "#97c2fc", "id": 1031071, "label": 1031071, "shape": "square", "size": 10, "title": "0xf1c1413096ff2278c3df198a28f8d54e0369cf3a"}, {"color": "#97c2fc", "id": 1033461, "label": "0.899", "shape": "dot", "size": 10, "title": "0xf2543fa2845ca803cf5896f19c05fb5983001e01"}, {"color": "#97c2fc", "id": 1041958, "label": 1041958, "shape": "square", "size": 10, "title": "0xf45ba58c415ed6c77cfc157f42f300f9fd980985"}, {"color": "#97c2fc", "id": 1043564, "label": 1043564, "shape": "square", "size": 10, "title": "0xf4bbe639cced35210da2018b0a31f4e1449b2a8a"}, {"color": "#97c2fc", "id": 1043927, "label": 1043927, "shape": "square", "size": 10, "title": "0xf4d2888d29d722226fafa5d9b24f9164c092421e"}, {"color": "#97c2fc", "id": 1059625, "label": 1059625, "shape": "square", "size": 10, "title": "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"}, {"color": "#97c2fc", "id": 1063716, "label": 1063716, "shape": "square", "size": 10, "title": "0xf970b8e36e23f7fc3fd752eea86f8be8d83375a6"}, {"color": "#97c2fc", "id": 5706, "label": 5706, "shape": "dot", "size": 10, "title": "0x00cbb4f513399390311a3e052649021231b3445d"}, {"color": "#97c2fc", "id": 12989, "label": 12989, "shape": "dot", "size": 10, "title": "0x026ac16311a47ab0f8dc9b023d858ead91d45a00"}, {"color": "#97c2fc", "id": 16846, "label": 16846, "shape": "dot", "size": 10, "title": "0x034c3c3079ac2f6c1c23fa20f21cb49906d800cd"}, {"color": "#97c2fc", "id": 19159, "label": 19159, "shape": "dot", "size": 10, "title": "0x03d7326f53715d4a042bd1fa12669eb420e87b5b"}, {"color": "#97c2fc", "id": 19227, "label": 19227, "shape": "dot", "size": 10, "title": "0x03db815a4fb988755d7c369ae9ac3b187b42679f"}, {"color": "#97c2fc", "id": 50534, "label": 50534, "shape": "dot", "size": 10, "title": "0x0b25b46a70e7f9296c6d8bae9a84c887da5cb9ec"}, {"color": "#97c2fc", "id": 60109, "label": 60109, "shape": "dot", "size": 10, "title": "0x0d5518c6d0140fbcd23a9fa8adf7704b469e4faf"}, {"color": "#97c2fc", "id": 78979, "label": 78979, "shape": "dot", "size": 10, "title": "0x11b6a5fe2906f3354145613db0d99ceb51f604c9"}, {"color": "#97c2fc", "id": 81863, "label": 81863, "shape": "dot", "size": 10, "title": "0x1266f928b7964173434d3feb6da2554b141920b8"}, {"color": "#97c2fc", "id": 102039, "label": 102039, "shape": "dot", "size": 10, "title": "0x1719c7dc8216ce67f96171e1a817195ae075d78d"}, {"color": "#97c2fc", "id": 127073, "label": 127073, "shape": "dot", "size": 10, "title": "0x1ceb4c4e01fba4c8a4513bca2929f3c68715514d"}, {"color": "#97c2fc", "id": 129270, "label": 129270, "shape": "dot", "size": 10, "title": "0x1d6f2f0356b3defadf14b1a0f8a3dcda89367d68"}, {"color": "#97c2fc", "id": 141963, "label": 141963, "shape": "dot", "size": 10, "title": "0x206625cec8e0a048b286b2645ba575b3ecaca793"}, {"color": "#97c2fc", "id": 143707, "label": 143707, "shape": "dot", "size": 10, "title": "0x20d08e58952bb70ff0ec1271085ca969c14be2a3"}, {"color": "#97c2fc", "id": 147042, "label": 147042, "shape": "dot", "size": 10, "title": "0x219b4b0a498566c412391219ea3d936176719ca6"}, {"color": "#97c2fc", "id": 148514, "label": 148514, "shape": "dot", "size": 10, "title": "0x21f53db4d2eacde70a2e4f0407d073c971ec1a33"}, {"color": "#97c2fc", "id": 149936, "label": 149936, "shape": "dot", "size": 10, "title": "0x224aba5d489675a7bd3ce07786fada466b46fa0f"}, {"color": "#97c2fc", "id": 199604, "label": 199604, "shape": "dot", "size": 10, "title": "0x2e062b59bb78b922171d4ae60dedaef1ff5ba123"}, {"color": "#97c2fc", "id": 211881, "label": 211881, "shape": "dot", "size": 10, "title": "0x30eea1e603b556eef164b4554bb6e7471b3e70f7"}, {"color": "#97c2fc", "id": 235851, "label": 235851, "shape": "dot", "size": 10, "title": "0x3690cc4e1a98a1b07a8efc38f4f3afc8f503615b"}, {"color": "#97c2fc", "id": 241102, "label": 241102, "shape": "dot", "size": 10, "title": "0x37c948992ac3273c0540ff8b61f2f71245b8dd4d"}, {"color": "#97c2fc", "id": 255311, "label": 255311, "shape": "dot", "size": 10, "title": "0x3b161d57f482cd2dfbb626f0307ef92b3b094fce"}, {"color": "#97c2fc", "id": 282638, "label": 282638, "shape": "dot", "size": 10, "title": "0x417efd6ce6dc947f7cfa744b6e110536bbf9d7ac"}, {"color": "#97c2fc", "id": 283984, "label": 283984, "shape": "dot", "size": 10, "title": "0x41d2a18e1ddacdabfddadb62e9aee67c63070b76"}, {"color": "#97c2fc", "id": 289754, "label": 289754, "shape": "dot", "size": 10, "title": "0x4331b095bc38dc3bce0a269682b5ebaefa252929"}, {"color": "#97c2fc", "id": 319400, "label": 319400, "shape": "dot", "size": 10, "title": "0x4a38c18f58e574c28c57e3344f140a32141775d4"}, {"color": "#97c2fc", "id": 319798, "label": 319798, "shape": "dot", "size": 10, "title": "0x4a508bc77452d3a06db51b17eb9ff8594fe5a804"}, {"color": "#97c2fc", "id": 322433, "label": 322433, "shape": "dot", "size": 10, "title": "0x4aed2b670dc4ba2df659b7c01404313d64031484"}, {"color": "#97c2fc", "id": 328412, "label": 328412, "shape": "dot", "size": 10, "title": "0x4c564a5368278389629a3f8efaa45725bb186624"}, {"color": "#97c2fc", "id": 335668, "label": 335668, "shape": "dot", "size": 10, "title": "0x4dfc4948eb5a6a1bddc5c6434956729337d330a3"}, {"color": "#97c2fc", "id": 336214, "label": 336214, "shape": "dot", "size": 10, "title": "0x4e1d52b14d91a070f14cc10e0f03522d8457094a"}, {"color": "#97c2fc", "id": 339736, "label": 339736, "shape": "dot", "size": 10, "title": "0x4eed479aa86f24c0070fc92fe30ed4ba183ac87c"}, {"color": "#97c2fc", "id": 347401, "label": 347401, "shape": "dot", "size": 10, "title": "0x50b3f21a3d49847dd39fb6591419c75653fa9dce"}, {"color": "#97c2fc", "id": 351279, "label": 351279, "shape": "dot", "size": 10, "title": "0x5197b5b062288bbf29008c92b08010a92dd677cd"}, {"color": "#97c2fc", "id": 363616, "label": 363616, "shape": "dot", "size": 10, "title": "0x5478e1cf9f8bc1159533069a7bafd5c5acebde0d"}, {"color": "#97c2fc", "id": 365440, "label": 365440, "shape": "dot", "size": 10, "title": "0x54e8a0c65e045ed86d778afd884a7607f1135728"}, {"color": "#97c2fc", "id": 365785, "label": 365785, "shape": "dot", "size": 10, "title": "0x54ff1352539842fbbe696306a4ff5b49dc2ba197"}, {"color": "#97c2fc", "id": 367032, "label": 367032, "shape": "dot", "size": 10, "title": "0x554c5af96e9e3c05aec01ce18221d0dd25975ab4"}, {"color": "#97c2fc", "id": 370686, "label": 370686, "shape": "dot", "size": 10, "title": "0x562574af66836b1d30e69815bdf0740a7bd7c437"}, {"color": "#97c2fc", "id": 383198, "label": 383198, "shape": "dot", "size": 10, "title": "0x59171b87817c5f07157066bd5284707a711229b3"}, {"color": "#97c2fc", "id": 385487, "label": 385487, "shape": "dot", "size": 10, "title": "0x59a11ed570c0b963d75cd176dcc4e0abc2584858"}, {"color": "#97c2fc", "id": 390797, "label": 390797, "shape": "dot", "size": 10, "title": "0x5adb8209b5276a23426994298fe9900644f57924"}, {"color": "#97c2fc", "id": 399299, "label": 399299, "shape": "dot", "size": 10, "title": "0x5cdb35fadb8262a3f88863254c870c2e6a848cca"}, {"color": "#97c2fc", "id": 404029, "label": 404029, "shape": "dot", "size": 10, "title": "0x5df67bdf139abc95b0b3a5851875a73a5e722c0e"}, {"color": "#97c2fc", "id": 413153, "label": 413153, "shape": "dot", "size": 10, "title": "0x60206c1f2b51ac470cb0f71323474f7f9e4772e1"}, {"color": "#97c2fc", "id": 415104, "label": 415104, "shape": "dot", "size": 10, "title": "0x60959ed8307ee2b0d04306f6b319aeee8864f1ee"}, {"color": "#97c2fc", "id": 421086, "label": 421086, "shape": "dot", "size": 10, "title": "0x62051bfd3a4f7039a849142e6e5ea172cbda5949"}, {"color": "#97c2fc", "id": 428360, "label": 428360, "shape": "dot", "size": 10, "title": "0x63b265d170f35d6bb724a6c00b4dcc822ea97867"}, {"color": "#97c2fc", "id": 431857, "label": 431857, "shape": "dot", "size": 10, "title": "0x64853bb1fe38d2a1e1ef5cefd3c109e874628ff5"}, {"color": "#97c2fc", "id": 433653, "label": 433653, "shape": "dot", "size": 10, "title": "0x64f1be0bd701df16406b015d13369f8787d19947"}, {"color": "#97c2fc", "id": 442531, "label": 442531, "shape": "dot", "size": 10, "title": "0x670d2748cc76d19567327de303d1381eb788909e"}, {"color": "#97c2fc", "id": 460128, "label": 460128, "shape": "dot", "size": 10, "title": "0x6b3de9b20455f4cc16d3f82798c0f3d1f5382ff7"}, {"color": "#97c2fc", "id": 469905, "label": 469905, "shape": "dot", "size": 10, "title": "0x6d96b763131b9fbef1f6d4af5bdcff09b2dbdd92"}, {"color": "#97c2fc", "id": 470737, "label": 470737, "shape": "dot", "size": 10, "title": "0x6dc6de51a97155af41c67e527951dff8d98c7e59"}, {"color": "#97c2fc", "id": 473315, "label": 473315, "shape": "dot", "size": 10, "title": "0x6e5e7d5dcad928c814caf7af7b0e706049a36629"}, {"color": "#97c2fc", "id": 482058, "label": 482058, "shape": "dot", "size": 10, "title": "0x7074a1a434b8c28048bf9de87e55232c684546b8"}, {"color": "#97c2fc", "id": 482519, "label": 482519, "shape": "dot", "size": 10, "title": "0x7092fdbc448698461a3ae98488c35568f368e0ad"}, {"color": "#97c2fc", "id": 496106, "label": 496106, "shape": "dot", "size": 10, "title": "0x73bafc248c76a6016ae2bc5180bfb146a308ee02"}, {"color": "#97c2fc", "id": 507485, "label": 507485, "shape": "dot", "size": 10, "title": "0x7672729a67c97f58cdb251ee75f88ce4b8534cf9"}, {"color": "#97c2fc", "id": 513723, "label": 513723, "shape": "dot", "size": 10, "title": "0x77e3630dec288c9a477bc430c44d8507068a63d1"}, {"color": "#97c2fc", "id": 518494, "label": 518494, "shape": "dot", "size": 10, "title": "0x7904667c340601aab73939372c016dc5102732a2"}, {"color": "#97c2fc", "id": 526240, "label": 526240, "shape": "dot", "size": 10, "title": "0x7ada379c8c39da937c0eef058d7202d718671ab7"}, {"color": "#97c2fc", "id": 563203, "label": 563203, "shape": "dot", "size": 10, "title": "0x839395e20bbb182fa440d08f850e6c7a8f6f0780"}, {"color": "#97c2fc", "id": 571917, "label": 571917, "shape": "dot", "size": 10, "title": "0x85a363699c6864248a6ffca66e4a1a5ccf9f5567"}, {"color": "#97c2fc", "id": 586099, "label": 586099, "shape": "dot", "size": 10, "title": "0x88e83b87fc4b0759b33a4b967c82ffaeb589632c"}, {"color": "#97c2fc", "id": 595024, "label": 595024, "shape": "dot", "size": 10, "title": "0x8b00191a7a3349ceffe90d2414fe0833fde0368e"}, {"color": "#97c2fc", "id": 595300, "label": 595300, "shape": "dot", "size": 10, "title": "0x8b104344f397afc33ee55c743a0fbd7d956201cd"}, {"color": "#97c2fc", "id": 600031, "label": 600031, "shape": "dot", "size": 10, "title": "0x8c27e91b1a9965c1a2e0beb389075e57691267f1"}, {"color": "#97c2fc", "id": 600706, "label": 600706, "shape": "dot", "size": 10, "title": "0x8c4f71b3cf6a76de2cc239a6fa84e1a80e589598"}, {"color": "#97c2fc", "id": 609292, "label": 609292, "shape": "dot", "size": 10, "title": "0x8e5539996a21fa05f7e553cb43d25f373ba6a1fa"}, {"color": "#97c2fc", "id": 613246, "label": 613246, "shape": "dot", "size": 10, "title": "0x8f423720584b0eff220c8ff0b62700917089be22"}, {"color": "#97c2fc", "id": 626069, "label": 626069, "shape": "dot", "size": 10, "title": "0x924b575917f822e32e88b7e7171fe0c00c70f401"}, {"color": "#97c2fc", "id": 638520, "label": 638520, "shape": "dot", "size": 10, "title": "0x9531c059098e3d194ff87febb587ab07b30b1306"}, {"color": "#97c2fc", "id": 638805, "label": 638805, "shape": "dot", "size": 10, "title": "0x954184ad0fbc67332bab62a6c5958c4c5e2cfec2"}, {"color": "#97c2fc", "id": 647410, "label": 647410, "shape": "dot", "size": 10, "title": "0x974bbc9c9b8a1b81e92df9d1457d2df98941814e"}, {"color": "#97c2fc", "id": 660967, "label": 660967, "shape": "dot", "size": 10, "title": "0x9a60d0454eab2935deb2013e677a47288a1b126c"}, {"color": "#97c2fc", "id": 661644, "label": 661644, "shape": "dot", "size": 10, "title": "0x9a8a9958ac1b70c49cce9693ccb0230f13f63505"}, {"color": "#97c2fc", "id": 667242, "label": 667242, "shape": "dot", "size": 10, "title": "0x9be21869873221cac1ba391a630b49d0d07a3e42"}, {"color": "#97c2fc", "id": 677639, "label": 677639, "shape": "dot", "size": 10, "title": "0x9e53890a42904d6dd2d1ecfdaa5dde784b843157"}, {"color": "#97c2fc", "id": 679561, "label": 679561, "shape": "dot", "size": 10, "title": "0x9ec5fceb76b0bcb2f8277ef703f546e2d8a72be6"}, {"color": "#97c2fc", "id": 679744, "label": 679744, "shape": "dot", "size": 10, "title": "0x9ed176365cc9928d492218f837aae08019f1f465"}, {"color": "#97c2fc", "id": 681194, "label": 681194, "shape": "dot", "size": 10, "title": "0x9f2942ff27e40445d3cb2aad90f84c3a03574f26"}, {"color": "#97c2fc", "id": 689737, "label": 689737, "shape": "dot", "size": 10, "title": "0xa12e3f357b5928caa496f1c54a0aadee2f0aec85"}, {"color": "#97c2fc", "id": 692057, "label": 692057, "shape": "dot", "size": 10, "title": "0xa1b93b469e32309da9916368f7c20565807c784b"}, {"color": "#97c2fc", "id": 710390, "label": 710390, "shape": "dot", "size": 10, "title": "0xa60c6d73cdb0f9bc05fa258f3c764a0080cf3ef8"}, {"color": "#97c2fc", "id": 731445, "label": 731445, "shape": "dot", "size": 10, "title": "0xab1129ad844cf2d039d8d1c82c42086953ac6abd"}, {"color": "#97c2fc", "id": 748375, "label": 748375, "shape": "dot", "size": 10, "title": "0xaf1834acb0dd2ef84cb2a9a81d838e6df4ca5e0b"}, {"color": "#97c2fc", "id": 753642, "label": 753642, "shape": "dot", "size": 10, "title": "0xb0512f306b6d8a759f0a6ae9be27272429d94ee4"}, {"color": "#97c2fc", "id": 757203, "label": 757203, "shape": "dot", "size": 10, "title": "0xb12c36abba3a5f422cd7424d165ad0fb46cd5bf3"}, {"color": "#97c2fc", "id": 757940, "label": 757940, "shape": "dot", "size": 10, "title": "0xb159a8a7e5c96fdc5e39aae2da72a4572f84e5c8"}, {"color": "#97c2fc", "id": 761164, "label": 761164, "shape": "dot", "size": 10, "title": "0xb21c33de1fab3fa15499c62b59fe0cc3250020d1"}, {"color": "#97c2fc", "id": 765127, "label": 765127, "shape": "dot", "size": 10, "title": "0xb30db235c948987487f9b2e67d65530c71fcdfdd"}, {"color": "#97c2fc", "id": 767096, "label": 767096, "shape": "dot", "size": 10, "title": "0xb3856883886f7ebc9a3b78116aecd368d0092166"}, {"color": "#97c2fc", "id": 780135, "label": 780135, "shape": "dot", "size": 10, "title": "0xb69fee258e2f1719eee5d8fa7ee41e924b1fd5b0"}, {"color": "#97c2fc", "id": 788900, "label": 788900, "shape": "dot", "size": 10, "title": "0xb8b281e556c478583087ae5af5356b485b83e819"}, {"color": "#97c2fc", "id": 789494, "label": 789494, "shape": "dot", "size": 10, "title": "0xb8d65d7487f763013d4ea5084ca57f73527e3dee"}, {"color": "#97c2fc", "id": 794854, "label": 794854, "shape": "dot", "size": 10, "title": "0xba0fee8490118fc4f46bd0974d7bf93d0e2f1064"}, {"color": "#97c2fc", "id": 804815, "label": 804815, "shape": "dot", "size": 10, "title": "0xbc60aa031a9f34bd7992c99eae5e2c4dd1b5dbc3"}, {"color": "#97c2fc", "id": 806040, "label": 806040, "shape": "dot", "size": 10, "title": "0xbca89cfff5cfe1313ac392ddf922eeefa2024b54"}, {"color": "#97c2fc", "id": 806154, "label": 806154, "shape": "dot", "size": 10, "title": "0xbcafdd642118e5536024675e776d32413728dd08"}, {"color": "#97c2fc", "id": 809978, "label": 809978, "shape": "dot", "size": 10, "title": "0xbd991d809d376e7b443ae8c32f64e80abf286ab5"}, {"color": "#97c2fc", "id": 818000, "label": 818000, "shape": "dot", "size": 10, "title": "0xbf7f1bdb3a2d6c318603ffc8f39974e597b6af5e"}, {"color": "#97c2fc", "id": 828618, "label": 828618, "shape": "dot", "size": 10, "title": "0xc2013c235cf746a8164747e25254c7b538864e10"}, {"color": "#97c2fc", "id": 843328, "label": 843328, "shape": "dot", "size": 10, "title": "0xc57b0c6df19ccb163d4f271dfc093d352dcc6120"}, {"color": "#97c2fc", "id": 844547, "label": 844547, "shape": "dot", "size": 10, "title": "0xc5c38f1ca2316c3351ba91537ffc1dd80e0d257b"}, {"color": "#97c2fc", "id": 844672, "label": 844672, "shape": "dot", "size": 10, "title": "0xc5caba302f628c97b846a164f7da9bf52a02cc97"}, {"color": "#97c2fc", "id": 844863, "label": 844863, "shape": "dot", "size": 10, "title": "0xc5d6d2ea25bb7cf7c997ba135fdd141555884685"}, {"color": "#97c2fc", "id": 850705, "label": 850705, "shape": "dot", "size": 10, "title": "0xc73add416e2119d20ce80e0904fc1877e33ef246"}, {"color": "#97c2fc", "id": 862212, "label": 862212, "shape": "dot", "size": 10, "title": "0xc9f0f7ae765fc0cefc1f45354ac50799c89a7368"}, {"color": "#97c2fc", "id": 871537, "label": 871537, "shape": "dot", "size": 10, "title": "0xcc1de0fe7f0e8b912e75f2bfb04ee003d4843abc"}, {"color": "#97c2fc", "id": 878079, "label": 878079, "shape": "dot", "size": 10, "title": "0xcda84cc75ec5c92a5dacabc13241256beceef964"}, {"color": "#97c2fc", "id": 884309, "label": 884309, "shape": "dot", "size": 10, "title": "0xcf24939b6c28196b1da830b07d138ea8e2aa8ab5"}, {"color": "#97c2fc", "id": 899800, "label": 899800, "shape": "dot", "size": 10, "title": "0xd2ccea05436bf27ae49b01726075449f815b683e"}, {"color": "#97c2fc", "id": 935746, "label": 935746, "shape": "dot", "size": 10, "title": "0xdb40ae9e2cbaf17bbe68d2ae221fa499f8e42c85"}, {"color": "#97c2fc", "id": 942029, "label": 942029, "shape": "dot", "size": 10, "title": "0xdcbeffbecce100cce9e4b153c4e15cb885643193"}, {"color": "#97c2fc", "id": 953205, "label": 953205, "shape": "dot", "size": 10, "title": "0xdf631777df4debcbcd647e85bdcb868b43663ba0"}, {"color": "#97c2fc", "id": 958697, "label": 958697, "shape": "dot", "size": 10, "title": "0xe0affd9979a4778a43d6204e8df0002db19a398f"}, {"color": "#97c2fc", "id": 969164, "label": 969164, "shape": "dot", "size": 10, "title": "0xe317c793ebc9d4a3732ca66e5a8fc4ffc213b989"}, {"color": "#97c2fc", "id": 971097, "label": 971097, "shape": "dot", "size": 10, "title": "0xe38e91102155a45baa0f8ad203e2ca9c10c4b95f"}, {"color": "#97c2fc", "id": 975870, "label": 975870, "shape": "dot", "size": 10, "title": "0xe4b420f15d6d878dcd0df7120ac0fc1509ee9cab"}, {"color": "#97c2fc", "id": 1001173, "label": 1001173, "shape": "dot", "size": 10, "title": "0xeab48a633ada8565f2cdeb5cde162909fd64b749"}, {"color": "#97c2fc", "id": 1012451, "label": 1012451, "shape": "dot", "size": 10, "title": "0xed628e601012cc6fd57dc0cede2a527cdc86a221"}, {"color": "#97c2fc", "id": 1015211, "label": 1015211, "shape": "dot", "size": 10, "title": "0xee0579b4c36fd52ec0a2b542fb801f136838b7f1"}, {"color": "#97c2fc", "id": 1047272, "label": 1047272, "shape": "dot", "size": 10, "title": "0xf599dd992fea3c597d859d17d98c41a54d5a2e4c"}, {"color": "#97c2fc", "id": 1053774, "label": 1053774, "shape": "dot", "size": 10, "title": "0xf7217ea2c8fc277822d3c9186299546df678fa54"}, {"color": "#97c2fc", "id": 1090487, "label": 1090487, "shape": "dot", "size": 10, "title": "0xffd55d121713682b27fd4ad42270461830c45a3e"}, {"color": "#97c2fc", "id": 41645, "label": 41645, "shape": "square", "size": 10, "title": "0x090d4613473dee047c3f2706764f49e0821d256e"}, {"color": "#97c2fc", "id": 44202, "label": 44202, "shape": "square", "size": 10, "title": "0x09a3ecafa817268f77be1283176b946c4ff2e608"}, {"color": "#97c2fc", "id": 52905, "label": 52905, "shape": "square", "size": 10, "title": "0x0bb1810061c2f5b2088054ee184e6c79e1591101"}, {"color": "#97c2fc", "id": 183506, "label": 183506, "shape": "square", "size": 10, "title": "0x2a398bba1236890fb6e9698a698a393bb8ee8674"}, {"color": "#97c2fc", "id": 286493, "label": 286493, "shape": "square", "size": 10, "title": "0x426ca1ea2406c07d75db9585f22781c096e3d0e0"}, {"color": "#97c2fc", "id": 298453, "label": 298453, "shape": "square", "size": 10, "title": "0x453c1208b400fe47acf275315f14e8f9f9fbc3cd"}, {"color": "#97c2fc", "id": 384736, "label": 384736, "shape": "dot", "size": 10, "title": "0x5974d2d7ceaac81f2371a540a8bd9310dd13a799"}, {"color": "#97c2fc", "id": 402283, "label": 402283, "shape": "square", "size": 10, "title": "0x5d8c9ba74607d2cbc4176882a42d4ace891c1c00"}, {"color": "#97c2fc", "id": 544473, "label": 544473, "shape": "square", "size": 10, "title": "0x7f268357a8c2552623316e2562d90e642bb538e5"}, {"color": "#97c2fc", "id": 548384, "label": 548384, "shape": "square", "size": 10, "title": "0x8014595f2ab54cd7c604b00e9fb932176fdc86ae"}, {"color": "#97c2fc", "id": 554593, "label": 554593, "shape": "square", "size": 10, "title": "0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5"}, {"color": "#97c2fc", "id": 771989, "label": 771989, "shape": "square", "size": 10, "title": "0xb4ad65f4f9c00a5287c64817df37142139fc65c4"}, {"color": "#97c2fc", "id": 778545, "label": 778545, "shape": "square", "size": 10, "title": "0xb63b606ac810a52cca15e44bb630fd42d8d1d83d"}, {"color": "#97c2fc", "id": 805463, "label": 805463, "shape": "square", "size": 10, "title": "0xbc86727e770de68b1060c91f6bb6945c73e10388"}, {"color": "#97c2fc", "id": 838747, "label": 838747, "shape": "dot", "size": 10, "title": "0xc46b3a00aa28484cbb2a60b4ce25fa50e7742918"}, {"color": "#97c2fc", "id": 855782, "label": 855782, "shape": "square", "size": 10, "title": "0xc86a157fdbc5d57c64af6469503c2905a5dc43df"}, {"color": "#97c2fc", "id": 890724, "label": 890724, "shape": "square", "size": 10, "title": "0xd0a6e6c54dbc68db5db3a091b171a77407ff7ccf"}, {"color": "#97c2fc", "id": 898017, "label": 898017, "shape": "square", "size": 10, "title": "0xd26114cd6ee289accf82350c8d8487fedb8a0c07"}, {"color": "#97c2fc", "id": 908071, "label": 908071, "shape": "square", "size": 10, "title": "0xd4c435f5b09f855c3317c8524cb1f586e42795fa"}, {"color": "#97c2fc", "id": 909964, "label": 909964, "shape": "square", "size": 10, "title": "0xd533a949740bb3306d119cc777fa900ba034cd52"}, {"color": "#97c2fc", "id": 923178, "label": 923178, "shape": "square", "size": 10, "title": "0xd850942ef8811f2a866692a623011bde52a462c1"}, {"color": "#97c2fc", "id": 993533, "label": 993533, "shape": "square", "size": 10, "title": "0xe8e45431b93215566ba923a7e611b7342ea954df"}, {"color": "#97c2fc", "id": 1002004, "label": 1002004, "shape": "square", "size": 10, "title": "0xeae57ce9cc1984f202e15e038b964bb8bdf7229a"}, {"color": "#97c2fc", "id": 1027544, "label": 1027544, "shape": "square", "size": 10, "title": "0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4"}, {"color": "#97c2fc", "id": 1031736, "label": 1031736, "shape": "square", "size": 10, "title": "0xf1ec7d0ba42f15fb5c9e3adbe86431973e44764c"}, {"color": "#97c2fc", "id": 1065058, "label": 1065058, "shape": "square", "size": 10, "title": "0xf9be8f0945acddeedaa64dfca5fe9629d0cf8e5d"}, {"color": "#97c2fc", "id": 28554, "label": 28554, "shape": "square", "size": 10, "title": "0x06012c8cf97bead5deae237070f9587f8e7a266d"}, {"color": "#97c2fc", "id": 84154, "label": 84154, "shape": "square", "size": 10, "title": "0x12eedce8d42df22308465894f30490782dfee674"}, {"color": "#97c2fc", "id": 202184, "label": 202184, "shape": "square", "size": 10, "title": "0x2ea742f0a645399849743e5fbe4c96215c0bbaf7"}, {"color": "#97c2fc", "id": 219389, "label": 219389, "shape": "square", "size": 10, "title": "0x32b24c2b7fa04acfb9bb78df50fe31cb982bce79"}, {"color": "#97c2fc", "id": 244870, "label": 244870, "shape": "square", "size": 10, "title": "0x38a9198270fb7fc101a61dbde9e51508f9d398f0"}, {"color": "#97c2fc", "id": 316292, "label": 316292, "shape": "square", "size": 10, "title": "0x497fb17915753335441f3e6b88dd02e65b433452"}, {"color": "#97c2fc", "id": 383754, "label": 383754, "shape": "square", "size": 10, "title": "0x593a48a41eef26f481205244c338edcf3a56b856"}, {"color": "#97c2fc", "id": 450629, "label": 450629, "shape": "dot", "size": 10, "title": "0x68f2dc31ee736177e9a3f882d531153fd20a0142"}, {"color": "#97c2fc", "id": 635897, "label": 635897, "shape": "square", "size": 10, "title": "0x94922a9a3fb3f75887b4d22dfd69d8a99947a604"}, {"color": "#97c2fc", "id": 687089, "label": 687089, "shape": "dot", "size": 10, "title": "0xa090e606e30bd747d4e6245a1517ebe430f0057e"}, {"color": "#97c2fc", "id": 723525, "label": 723525, "shape": "square", "size": 10, "title": "0xa9349090faf7d14ca1e0dcd019c17dc3d9be39cc"}, {"color": "#97c2fc", "id": 766063, "label": 766063, "shape": "square", "size": 10, "title": "0xb34685ec7d3006f77c0a591f898c01b9ef547ef4"}, {"color": "#97c2fc", "id": 800516, "label": 800516, "shape": "square", "size": 10, "title": "0xbb5f77d71dc44e8f8e5f37dfd9cd9f0d5dca5393"}, {"color": "#97c2fc", "id": 979750, "label": 979750, "shape": "dot", "size": 10, "title": "0xe59fdce71f27ee7edaf72db40aabe9c73375418a"}, {"color": "#97c2fc", "id": 994577, "label": 994577, "shape": "square", "size": 10, "title": "0xe92332a49424cefe4cfa7ac20ca5d3001e8feceb"}, {"color": "#97c2fc", "id": 1004198, "label": 1004198, "shape": "square", "size": 10, "title": "0xeb686666a266b0abd5849b0b440ed081ac7b16f2"}, {"color": "#97c2fc", "id": 1081013, "label": 1081013, "shape": "square", "size": 10, "title": "0xfd9aabf30df01b4f67cde9c9c775f839f0fd7c3a"}, {"color": "#97c2fc", "id": 446391, "label": 446391, "shape": "square", "size": 10, "title": "0x67f5c948dceaf99352f6cac71c862c1c3b60dfdf"}, {"color": "#97c2fc", "id": 521954, "label": 521954, "shape": "square", "size": 10, "title": "0x79da5fa272e8fb280cee4d0649aa6a9e4e62ceb0"}, {"color": "#97c2fc", "id": 881722, "label": 881722, "shape": "square", "size": 10, "title": "0xce853db3359326db6d03981c9fb42983bbcdd007"}, {"color": "#97c2fc", "id": 41580, "label": 41580, "shape": "square", "size": 10, "title": "0x0909dc55aecc9e7e51c3d74f5662a7adea19df9d"}, {"color": "#97c2fc", "id": 168887, "label": 168887, "shape": "square", "size": 10, "title": "0x26ce399827ac0812e0ac7c9bafe35143a4e66bce"}, {"color": "#97c2fc", "id": 246779, "label": 246779, "shape": "square", "size": 10, "title": "0x3918b236c37bc2f6e0069b7b2016e25f22391fae"}, {"color": "#97c2fc", "id": 325584, "label": 325584, "shape": "square", "size": 10, "title": "0x4baaba482a4b220393b31b969dac154ebf58c16b"}, {"color": "#97c2fc", "id": 495586, "label": 495586, "shape": "square", "size": 10, "title": "0x739d9455a834e4dfab0e3da1d3a3e8fae8f2b6ca"}, {"color": "#97c2fc", "id": 887475, "label": 887475, "shape": "square", "size": 10, "title": "0xcfe79006125bfdf4fa5b137e736ebf3208605f06"}, {"color": "#97c2fc", "id": 892079, "label": 892079, "shape": "square", "size": 10, "title": "0xd0fdbb4ffeaa932678c8a805c9dc1f23b27cc2b2"}, {"color": "#97c2fc", "id": 909487, "label": 909487, "shape": "square", "size": 10, "title": "0xd519b8460b7c3c619d26e5a4a67c60bcdc1a5e47"}, {"color": "#97c2fc", "id": 755111, "label": 755111, "shape": "square", "size": 10, "title": "0xb0aaf80254d5774bff697ca495f603883df6d439"}, {"color": "#97c2fc", "id": 155077, "label": 155077, "shape": "square", "size": 10, "title": "0x23850f3e6f760b92491892a5a3772e7fc000adf1"}, {"color": "#97c2fc", "id": 30738, "label": 30738, "shape": "dot", "size": 10, "title": "0x0681d8db095565fe8a346fa0277bffde9c0edbbf"}, {"color": "#97c2fc", "id": 47785, "label": 47785, "shape": "dot", "size": 10, "title": "0x0a80c3c540eef99811f4579fa7b1a0617294e06f"}, {"color": "#97c2fc", "id": 147190, "label": 147190, "shape": "dot", "size": 10, "title": "0x21a31ee1afc51d94c2efccaa2092ad1028285549"}, {"color": "#97c2fc", "id": 291392, "label": "0.926", "shape": "dot", "size": 10, "title": "0x439357d54c33069cf94a3ae4ba0e979cbfb822bc"}, {"color": "#97c2fc", "id": 302493, "label": 302493, "shape": "dot", "size": 10, "title": "0x46340b20830761efd32832a74d7169b29feb9758"}, {"color": "#97c2fc", "id": 572255, "label": 572255, "shape": "dot", "size": 10, "title": "0x85b931a32a0725be14285b66f1a22178c672d69b"}, {"color": "#97c2fc", "id": 662441, "label": 662441, "shape": "dot", "size": 10, "title": "0x9ab7a0a0e78f8b58d625de672e326aab036c27fe"}, {"color": "#97c2fc", "id": 776925, "label": 776925, "shape": "dot", "size": 10, "title": "0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511"}, {"color": "#97c2fc", "id": 897555, "label": 897555, "shape": "dot", "size": 10, "title": "0xd24400ae8bfebb18ca49be86258a3c749cf46853"}, {"color": "#97c2fc", "id": 159911, "label": 159911, "shape": "square", "size": 10, "title": "0x24b15d836c343c86f5db8b20894cf6a6b4c50ddf"}, {"color": "#97c2fc", "id": 350987, "label": 350987, "shape": "square", "size": 10, "title": "0x518531254fbab159830e5b7597203b3e6d849765"}, {"color": "#97c2fc", "id": 360668, "label": 360668, "shape": "square", "size": 10, "title": "0x53c8421c7a00e838a8b5fb5adfdf0652d5a0f361"}, {"color": "#97c2fc", "id": 478351, "label": 478351, "shape": "square", "size": 10, "title": "0x6f94ab9620a2cf7a68d36835c146053fad7d0728"}, {"color": "#97c2fc", "id": 748045, "label": 748045, "shape": "square", "size": 10, "title": "0xaf059b3f45012e9e2be85a2a97baa64766ee1f4b"}, {"color": "#97c2fc", "id": 60464, "label": 60464, "shape": "dot", "size": 10, "title": "0x0d6b5a54f940bf3d52e438cab785981aaefdf40c"}, {"color": "#97c2fc", "id": 167535, "label": 167535, "shape": "dot", "size": 10, "title": "0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0"}, {"color": "#97c2fc", "id": 371182, "label": 371182, "shape": "dot", "size": 10, "title": "0x564286362092d8e7936f0549571a803b203aaced"}, {"color": "#97c2fc", "id": 910459, "label": 910459, "shape": "dot", "size": 10, "title": "0xd551234ae421e3bcba99a0da6d736074f22192ff"}, {"color": "#97c2fc", "id": 1073075, "label": 1073075, "shape": "dot", "size": 10, "title": "0xfbb1b73c4f0bda4f67dca266ce6ef42f520fbb98"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": 594065, "to": 0, "width": 1}, {"arrows": "to", "from": 594065, "to": 28, "width": 1}, {"arrows": "to", "from": 594065, "to": 6196, "width": 1}, {"arrows": "to", "from": 594065, "to": 18911, "width": 1}, {"arrows": "to", "from": 594065, "to": 37284, "width": 1}, {"arrows": "to", "from": 594065, "to": 38402, "width": 1}, {"arrows": "to", "from": 594065, "to": 53243, "width": 1}, {"arrows": "to", "from": 594065, "to": 58314, "width": 1}, {"arrows": "to", "from": 594065, "to": 60899, "width": 1}, {"arrows": "to", "from": 594065, "to": 63906, "width": 1}, {"arrows": "to", "from": 594065, "to": 66970, "width": 1}, {"arrows": "to", "from": 594065, "to": 68768, "width": 1}, {"arrows": "to", "from": 594065, "to": 76081, "width": 1}, {"arrows": "to", "from": 594065, "to": 76087, "width": 1}, {"arrows": "to", "from": 594065, "to": 76096, "width": 1}, {"arrows": "to", "from": 594065, "to": 103648, "width": 1}, {"arrows": "to", "from": 594065, "to": 106618, "width": 1}, {"arrows": "to", "from": 594065, "to": 109837, "width": 1}, {"arrows": "to", "from": 594065, "to": 131650, "width": 1}, {"arrows": "to", "from": 594065, "to": 131750, "width": 1}, {"arrows": "to", "from": 594065, "to": 138485, "width": 1}, {"arrows": "to", "from": 594065, "to": 150281, "width": 1}, {"arrows": "to", "from": 594065, "to": 160720, "width": 1}, {"arrows": "to", "from": 594065, "to": 171500, "width": 1}, {"arrows": "to", "from": 594065, "to": 174961, "width": 1}, {"arrows": "to", "from": 594065, "to": 179690, "width": 1}, {"arrows": "to", "from": 594065, "to": 202619, "width": 1}, {"arrows": "to", "from": 594065, "to": 208852, "width": 1}, {"arrows": "to", "from": 594065, "to": 213229, "width": 1}, {"arrows": "to", "from": 594065, "to": 237476, "width": 1}, {"arrows": "to", "from": 594065, "to": 244836, "width": 1}, {"arrows": "to", "from": 594065, "to": 249220, "width": 1}, {"arrows": "to", "from": 594065, "to": 256130, "width": 1}, {"arrows": "to", "from": 594065, "to": 259612, "width": 1}, {"arrows": "to", "from": 594065, "to": 266061, "width": 1}, {"arrows": "to", "from": 594065, "to": 276925, "width": 1}, {"arrows": "to", "from": 594065, "to": 294151, "width": 1}, {"arrows": "to", "from": 594065, "to": 294369, "width": 1}, {"arrows": "to", "from": 594065, "to": 303634, "width": 1}, {"arrows": "to", "from": 594065, "to": 312852, "width": 1}, {"arrows": "to", "from": 594065, "to": 315795, "width": 1}, {"arrows": "to", "from": 594065, "to": 315987, "width": 1}, {"arrows": "to", "from": 594065, "to": 316165, "width": 1}, {"arrows": "to", "from": 594065, "to": 317344, "width": 1}, {"arrows": "to", "from": 594065, "to": 321271, "width": 1}, {"arrows": "to", "from": 594065, "to": 328855, "width": 1}, {"arrows": "to", "from": 594065, "to": 330435, "width": 1}, {"arrows": "to", "from": 594065, "to": 333619, "width": 1}, {"arrows": "to", "from": 594065, "to": 334095, "width": 1}, {"arrows": "to", "from": 594065, "to": 334577, "width": 1}, {"arrows": "to", "from": 594065, "to": 335119, "width": 1}, {"arrows": "to", "from": 594065, "to": 338362, "width": 1}, {"arrows": "to", "from": 594065, "to": 339848, "width": 1}, {"arrows": "to", "from": 594065, "to": 342308, "width": 1}, {"arrows": "to", "from": 594065, "to": 342441, "width": 1}, {"arrows": "to", "from": 594065, "to": 354276, "width": 1}, {"arrows": "to", "from": 594065, "to": 360267, "width": 1}, {"arrows": "to", "from": 594065, "to": 363346, "width": 1}, {"arrows": "to", "from": 594065, "to": 366644, "width": 1}, {"arrows": "to", "from": 594065, "to": 371946, "width": 1}, {"arrows": "to", "from": 594065, "to": 372448, "width": 1}, {"arrows": "to", "from": 594065, "to": 400464, "width": 1}, {"arrows": "to", "from": 594065, "to": 400859, "width": 1}, {"arrows": "to", "from": 594065, "to": 405432, "width": 1}, {"arrows": "to", "from": 594065, "to": 412038, "width": 1}, {"arrows": "to", "from": 594065, "to": 419271, "width": 1}, {"arrows": "to", "from": 594065, "to": 436487, "width": 1}, {"arrows": "to", "from": 594065, "to": 446831, "width": 1}, {"arrows": "to", "from": 594065, "to": 446865, "width": 1}, {"arrows": "to", "from": 594065, "to": 452250, "width": 1}, {"arrows": "to", "from": 594065, "to": 459484, "width": 1}, {"arrows": "to", "from": 594065, "to": 465541, "width": 1}, {"arrows": "to", "from": 594065, "to": 476970, "width": 1}, {"arrows": "to", "from": 594065, "to": 489248, "width": 1}, {"arrows": "to", "from": 594065, "to": 497184, "width": 1}, {"arrows": "to", "from": 594065, "to": 506831, "width": 1}, {"arrows": "to", "from": 594065, "to": 508821, "width": 1}, {"arrows": "to", "from": 594065, "to": 520859, "width": 1}, {"arrows": "to", "from": 594065, "to": 523203, "width": 1}, {"arrows": "to", "from": 594065, "to": 530706, "width": 1}, {"arrows": "to", "from": 594065, "to": 535783, "width": 1}, {"arrows": "to", "from": 594065, "to": 547143, "width": 1}, {"arrows": "to", "from": 594065, "to": 552916, "width": 1}, {"arrows": "to", "from": 594065, "to": 554561, "width": 1}, {"arrows": "to", "from": 594065, "to": 585112, "width": 1}, {"arrows": "to", "from": 594065, "to": 589945, "width": 1}, {"arrows": "to", "from": 594065, "to": 594065, "width": 1}, {"arrows": "to", "from": 594065, "to": 596542, "width": 1}, {"arrows": "to", "from": 594065, "to": 609316, "width": 1}, {"arrows": "to", "from": 594065, "to": 611602, "width": 1}, {"arrows": "to", "from": 594065, "to": 618367, "width": 1}, {"arrows": "to", "from": 594065, "to": 633209, "width": 1}, {"arrows": "to", "from": 594065, "to": 634639, "width": 1}, {"arrows": "to", "from": 594065, "to": 637698, "width": 1}, {"arrows": "to", "from": 594065, "to": 637838, "width": 1}, {"arrows": "to", "from": 594065, "to": 638658, "width": 1}, {"arrows": "to", "from": 594065, "to": 640332, "width": 1}, {"arrows": "to", "from": 594065, "to": 642072, "width": 1}, {"arrows": "to", "from": 594065, "to": 656935, "width": 1}, {"arrows": "to", "from": 594065, "to": 658450, "width": 1}, {"arrows": "to", "from": 594065, "to": 664253, "width": 1}, {"arrows": "to", "from": 594065, "to": 682839, "width": 1}, {"arrows": "to", "from": 594065, "to": 683136, "width": 1}, {"arrows": "to", "from": 594065, "to": 687774, "width": 1}, {"arrows": "to", "from": 594065, "to": 687992, "width": 1}, {"arrows": "to", "from": 594065, "to": 690181, "width": 1}, {"arrows": "to", "from": 594065, "to": 695214, "width": 1}, {"arrows": "to", "from": 594065, "to": 698951, "width": 1}, {"arrows": "to", "from": 594065, "to": 699097, "width": 1}, {"arrows": "to", "from": 594065, "to": 700408, "width": 1}, {"arrows": "to", "from": 594065, "to": 707106, "width": 1}, {"arrows": "to", "from": 594065, "to": 707108, "width": 1}, {"arrows": "to", "from": 594065, "to": 721416, "width": 1}, {"arrows": "to", "from": 594065, "to": 725888, "width": 1}, {"arrows": "to", "from": 594065, "to": 730655, "width": 1}, {"arrows": "to", "from": 594065, "to": 734367, "width": 1}, {"arrows": "to", "from": 594065, "to": 738944, "width": 1}, {"arrows": "to", "from": 594065, "to": 739494, "width": 1}, {"arrows": "to", "from": 594065, "to": 742886, "width": 1}, {"arrows": "to", "from": 594065, "to": 753410, "width": 1}, {"arrows": "to", "from": 594065, "to": 761368, "width": 1}, {"arrows": "to", "from": 594065, "to": 765724, "width": 1}, {"arrows": "to", "from": 594065, "to": 767716, "width": 1}, {"arrows": "to", "from": 594065, "to": 768047, "width": 1}, {"arrows": "to", "from": 594065, "to": 784004, "width": 1}, {"arrows": "to", "from": 594065, "to": 789204, "width": 1}, {"arrows": "to", "from": 594065, "to": 803279, "width": 1}, {"arrows": "to", "from": 594065, "to": 806818, "width": 1}, {"arrows": "to", "from": 594065, "to": 812024, "width": 1}, {"arrows": "to", "from": 594065, "to": 812143, "width": 1}, {"arrows": "to", "from": 594065, "to": 814082, "width": 1}, {"arrows": "to", "from": 594065, "to": 820343, "width": 1}, {"arrows": "to", "from": 594065, "to": 820400, "width": 1}, {"arrows": "to", "from": 594065, "to": 820814, "width": 1}, {"arrows": "to", "from": 594065, "to": 822855, "width": 1}, {"arrows": "to", "from": 594065, "to": 823700, "width": 1}, {"arrows": "to", "from": 594065, "to": 826553, "width": 1}, {"arrows": "to", "from": 594065, "to": 830042, "width": 1}, {"arrows": "to", "from": 594065, "to": 834487, "width": 1}, {"arrows": "to", "from": 594065, "to": 850757, "width": 1}, {"arrows": "to", "from": 594065, "to": 859381, "width": 1}, {"arrows": "to", "from": 594065, "to": 871035, "width": 1}, {"arrows": "to", "from": 594065, "to": 874398, "width": 1}, {"arrows": "to", "from": 594065, "to": 904240, "width": 1}, {"arrows": "to", "from": 594065, "to": 910478, "width": 1}, {"arrows": "to", "from": 594065, "to": 916201, "width": 1}, {"arrows": "to", "from": 594065, "to": 921768, "width": 1}, {"arrows": "to", "from": 594065, "to": 929827, "width": 1}, {"arrows": "to", "from": 594065, "to": 933604, "width": 1}, {"arrows": "to", "from": 594065, "to": 948360, "width": 1}, {"arrows": "to", "from": 594065, "to": 951275, "width": 1}, {"arrows": "to", "from": 594065, "to": 953048, "width": 1}, {"arrows": "to", "from": 594065, "to": 953769, "width": 1}, {"arrows": "to", "from": 594065, "to": 966988, "width": 1}, {"arrows": "to", "from": 594065, "to": 972199, "width": 1}, {"arrows": "to", "from": 594065, "to": 973358, "width": 1}, {"arrows": "to", "from": 594065, "to": 974895, "width": 1}, {"arrows": "to", "from": 594065, "to": 1019518, "width": 1}, {"arrows": "to", "from": 594065, "to": 1022252, "width": 1}, {"arrows": "to", "from": 594065, "to": 1026505, "width": 1}, {"arrows": "to", "from": 594065, "to": 1031071, "width": 1}, {"arrows": "to", "from": 594065, "to": 1033461, "width": 1}, {"arrows": "to", "from": 594065, "to": 1041958, "width": 1}, {"arrows": "to", "from": 594065, "to": 1043564, "width": 1}, {"arrows": "to", "from": 594065, "to": 1043927, "width": 1}, {"arrows": "to", "from": 594065, "to": 1059625, "width": 1}, {"arrows": "to", "from": 594065, "to": 1063716, "width": 1}, {"arrows": "to", "from": 6196, "to": 5706, "width": 1}, {"arrows": "to", "from": 6196, "to": 12989, "width": 1}, {"arrows": "to", "from": 6196, "to": 16846, "width": 1}, {"arrows": "to", "from": 6196, "to": 19159, "width": 1}, {"arrows": "to", "from": 6196, "to": 19227, "width": 1}, {"arrows": "to", "from": 6196, "to": 50534, "width": 1}, {"arrows": "to", "from": 6196, "to": 60109, "width": 1}, {"arrows": "to", "from": 6196, "to": 78979, "width": 1}, {"arrows": "to", "from": 6196, "to": 81863, "width": 1}, {"arrows": "to", "from": 6196, "to": 102039, "width": 1}, {"arrows": "to", "from": 6196, "to": 127073, "width": 1}, {"arrows": "to", "from": 6196, "to": 129270, "width": 1}, {"arrows": "to", "from": 6196, "to": 141963, "width": 1}, {"arrows": "to", "from": 6196, "to": 143707, "width": 1}, {"arrows": "to", "from": 6196, "to": 147042, "width": 1}, {"arrows": "to", "from": 6196, "to": 148514, "width": 1}, {"arrows": "to", "from": 6196, "to": 149936, "width": 1}, {"arrows": "to", "from": 6196, "to": 199604, "width": 1}, {"arrows": "to", "from": 6196, "to": 211881, "width": 1}, {"arrows": "to", "from": 6196, "to": 235851, "width": 1}, {"arrows": "to", "from": 6196, "to": 241102, "width": 1}, {"arrows": "to", "from": 6196, "to": 255311, "width": 1}, {"arrows": "to", "from": 6196, "to": 282638, "width": 1}, {"arrows": "to", "from": 6196, "to": 283984, "width": 1}, {"arrows": "to", "from": 6196, "to": 289754, "width": 1}, {"arrows": "to", "from": 6196, "to": 319400, "width": 1}, {"arrows": "to", "from": 6196, "to": 319798, "width": 1}, {"arrows": "to", "from": 6196, "to": 322433, "width": 1}, {"arrows": "to", "from": 6196, "to": 328412, "width": 1}, {"arrows": "to", "from": 6196, "to": 335668, "width": 1}, {"arrows": "to", "from": 6196, "to": 336214, "width": 1}, {"arrows": "to", "from": 6196, "to": 339736, "width": 1}, {"arrows": "to", "from": 6196, "to": 347401, "width": 1}, {"arrows": "to", "from": 6196, "to": 351279, "width": 1}, {"arrows": "to", "from": 6196, "to": 363616, "width": 1}, {"arrows": "to", "from": 6196, "to": 365440, "width": 1}, {"arrows": "to", "from": 6196, "to": 365785, "width": 1}, {"arrows": "to", "from": 6196, "to": 367032, "width": 1}, {"arrows": "to", "from": 6196, "to": 370686, "width": 1}, {"arrows": "to", "from": 6196, "to": 383198, "width": 1}, {"arrows": "to", "from": 6196, "to": 385487, "width": 1}, {"arrows": "to", "from": 6196, "to": 390797, "width": 1}, {"arrows": "to", "from": 6196, "to": 399299, "width": 1}, {"arrows": "to", "from": 6196, "to": 404029, "width": 1}, {"arrows": "to", "from": 6196, "to": 413153, "width": 1}, {"arrows": "to", "from": 6196, "to": 415104, "width": 1}, {"arrows": "to", "from": 6196, "to": 421086, "width": 1}, {"arrows": "to", "from": 6196, "to": 428360, "width": 1}, {"arrows": "to", "from": 6196, "to": 431857, "width": 1}, {"arrows": "to", "from": 6196, "to": 433653, "width": 1}, {"arrows": "to", "from": 6196, "to": 442531, "width": 1}, {"arrows": "to", "from": 6196, "to": 460128, "width": 1}, {"arrows": "to", "from": 6196, "to": 469905, "width": 1}, {"arrows": "to", "from": 6196, "to": 470737, "width": 1}, {"arrows": "to", "from": 6196, "to": 473315, "width": 1}, {"arrows": "to", "from": 6196, "to": 482058, "width": 1}, {"arrows": "to", "from": 6196, "to": 482519, "width": 1}, {"arrows": "to", "from": 6196, "to": 496106, "width": 1}, {"arrows": "to", "from": 6196, "to": 507485, "width": 1}, {"arrows": "to", "from": 6196, "to": 513723, "width": 1}, {"arrows": "to", "from": 6196, "to": 518494, "width": 1}, {"arrows": "to", "from": 6196, "to": 526240, "width": 1}, {"arrows": "to", "from": 6196, "to": 563203, "width": 1}, {"arrows": "to", "from": 6196, "to": 571917, "width": 1}, {"arrows": "to", "from": 6196, "to": 586099, "width": 1}, {"arrows": "to", "from": 6196, "to": 595024, "width": 1}, {"arrows": "to", "from": 6196, "to": 595300, "width": 1}, {"arrows": "to", "from": 6196, "to": 600031, "width": 1}, {"arrows": "to", "from": 6196, "to": 600706, "width": 1}, {"arrows": "to", "from": 6196, "to": 609292, "width": 1}, {"arrows": "to", "from": 6196, "to": 613246, "width": 1}, {"arrows": "to", "from": 6196, "to": 626069, "width": 1}, {"arrows": "to", "from": 6196, "to": 638520, "width": 1}, {"arrows": "to", "from": 6196, "to": 638805, "width": 1}, {"arrows": "to", "from": 6196, "to": 647410, "width": 1}, {"arrows": "to", "from": 6196, "to": 660967, "width": 1}, {"arrows": "to", "from": 6196, "to": 661644, "width": 1}, {"arrows": "to", "from": 6196, "to": 667242, "width": 1}, {"arrows": "to", "from": 6196, "to": 677639, "width": 1}, {"arrows": "to", "from": 6196, "to": 679561, "width": 1}, {"arrows": "to", "from": 6196, "to": 679744, "width": 1}, {"arrows": "to", "from": 6196, "to": 681194, "width": 1}, {"arrows": "to", "from": 6196, "to": 689737, "width": 1}, {"arrows": "to", "from": 6196, "to": 692057, "width": 1}, {"arrows": "to", "from": 6196, "to": 710390, "width": 1}, {"arrows": "to", "from": 6196, "to": 731445, "width": 1}, {"arrows": "to", "from": 6196, "to": 748375, "width": 1}, {"arrows": "to", "from": 6196, "to": 753642, "width": 1}, {"arrows": "to", "from": 6196, "to": 757203, "width": 1}, {"arrows": "to", "from": 6196, "to": 757940, "width": 1}, {"arrows": "to", "from": 6196, "to": 761164, "width": 1}, {"arrows": "to", "from": 6196, "to": 765127, "width": 1}, {"arrows": "to", "from": 6196, "to": 767096, "width": 1}, {"arrows": "to", "from": 6196, "to": 780135, "width": 1}, {"arrows": "to", "from": 6196, "to": 788900, "width": 1}, {"arrows": "to", "from": 6196, "to": 789494, "width": 1}, {"arrows": "to", "from": 6196, "to": 794854, "width": 1}, {"arrows": "to", "from": 6196, "to": 804815, "width": 1}, {"arrows": "to", "from": 6196, "to": 806040, "width": 1}, {"arrows": "to", "from": 6196, "to": 806154, "width": 1}, {"arrows": "to", "from": 6196, "to": 809978, "width": 1}, {"arrows": "to", "from": 6196, "to": 818000, "width": 1}, {"arrows": "to", "from": 6196, "to": 828618, "width": 1}, {"arrows": "to", "from": 6196, "to": 843328, "width": 1}, {"arrows": "to", "from": 6196, "to": 844547, "width": 1}, {"arrows": "to", "from": 6196, "to": 844672, "width": 1}, {"arrows": "to", "from": 6196, "to": 844863, "width": 1}, {"arrows": "to", "from": 6196, "to": 850705, "width": 1}, {"arrows": "to", "from": 6196, "to": 862212, "width": 1}, {"arrows": "to", "from": 6196, "to": 871537, "width": 1}, {"arrows": "to", "from": 6196, "to": 878079, "width": 1}, {"arrows": "to", "from": 6196, "to": 884309, "width": 1}, {"arrows": "to", "from": 6196, "to": 899800, "width": 1}, {"arrows": "to", "from": 6196, "to": 935746, "width": 1}, {"arrows": "to", "from": 6196, "to": 942029, "width": 1}, {"arrows": "to", "from": 6196, "to": 953205, "width": 1}, {"arrows": "to", "from": 6196, "to": 958697, "width": 1}, {"arrows": "to", "from": 6196, "to": 969164, "width": 1}, {"arrows": "to", "from": 6196, "to": 971097, "width": 1}, {"arrows": "to", "from": 6196, "to": 975870, "width": 1}, {"arrows": "to", "from": 6196, "to": 1001173, "width": 1}, {"arrows": "to", "from": 6196, "to": 1012451, "width": 1}, {"arrows": "to", "from": 6196, "to": 1015211, "width": 1}, {"arrows": "to", "from": 6196, "to": 1047272, "width": 1}, {"arrows": "to", "from": 6196, "to": 1053774, "width": 1}, {"arrows": "to", "from": 6196, "to": 1090487, "width": 1}, {"arrows": "to", "from": 18911, "to": 594065, "width": 1}, {"arrows": "to", "from": 18911, "to": 18911, "width": 1}, {"arrows": "to", "from": 18911, "to": 41645, "width": 1}, {"arrows": "to", "from": 18911, "to": 44202, "width": 1}, {"arrows": "to", "from": 18911, "to": 52905, "width": 1}, {"arrows": "to", "from": 18911, "to": 68768, "width": 1}, {"arrows": "to", "from": 18911, "to": 103648, "width": 1}, {"arrows": "to", "from": 18911, "to": 138485, "width": 1}, {"arrows": "to", "from": 18911, "to": 183506, "width": 1}, {"arrows": "to", "from": 18911, "to": 208852, "width": 1}, {"arrows": "to", "from": 18911, "to": 286493, "width": 1}, {"arrows": "to", "from": 18911, "to": 294369, "width": 1}, {"arrows": "to", "from": 18911, "to": 298453, "width": 1}, {"arrows": "to", "from": 18911, "to": 321271, "width": 1}, {"arrows": "to", "from": 18911, "to": 384736, "width": 1}, {"arrows": "to", "from": 18911, "to": 402283, "width": 1}, {"arrows": "to", "from": 18911, "to": 419271, "width": 1}, {"arrows": "to", "from": 18911, "to": 446831, "width": 1}, {"arrows": "to", "from": 18911, "to": 459484, "width": 1}, {"arrows": "to", "from": 18911, "to": 544473, "width": 1}, {"arrows": "to", "from": 18911, "to": 548384, "width": 1}, {"arrows": "to", "from": 18911, "to": 554593, "width": 1}, {"arrows": "to", "from": 18911, "to": 642072, "width": 1}, {"arrows": "to", "from": 18911, "to": 682839, "width": 1}, {"arrows": "to", "from": 18911, "to": 687774, "width": 1}, {"arrows": "to", "from": 18911, "to": 695214, "width": 1}, {"arrows": "to", "from": 18911, "to": 771989, "width": 1}, {"arrows": "to", "from": 18911, "to": 778545, "width": 1}, {"arrows": "to", "from": 18911, "to": 805463, "width": 1}, {"arrows": "to", "from": 18911, "to": 820814, "width": 1}, {"arrows": "to", "from": 18911, "to": 838747, "width": 1}, {"arrows": "to", "from": 18911, "to": 855782, "width": 1}, {"arrows": "to", "from": 18911, "to": 890724, "width": 1}, {"arrows": "to", "from": 18911, "to": 898017, "width": 1}, {"arrows": "to", "from": 18911, "to": 908071, "width": 1}, {"arrows": "to", "from": 18911, "to": 909964, "width": 1}, {"arrows": "to", "from": 18911, "to": 923178, "width": 1}, {"arrows": "to", "from": 18911, "to": 951275, "width": 1}, {"arrows": "to", "from": 18911, "to": 973358, "width": 1}, {"arrows": "to", "from": 18911, "to": 993533, "width": 1}, {"arrows": "to", "from": 18911, "to": 1002004, "width": 1}, {"arrows": "to", "from": 18911, "to": 1027544, "width": 1}, {"arrows": "to", "from": 18911, "to": 1031736, "width": 1}, {"arrows": "to", "from": 18911, "to": 1043927, "width": 1}, {"arrows": "to", "from": 18911, "to": 1059625, "width": 1}, {"arrows": "to", "from": 18911, "to": 1065058, "width": 1}, {"arrows": "to", "from": 259612, "to": 28554, "width": 1}, {"arrows": "to", "from": 259612, "to": 237476, "width": 1}, {"arrows": "to", "from": 259612, "to": 259612, "width": 1}, {"arrows": "to", "from": 259612, "to": 294151, "width": 1}, {"arrows": "to", "from": 259612, "to": 321271, "width": 1}, {"arrows": "to", "from": 259612, "to": 523203, "width": 1}, {"arrows": "to", "from": 259612, "to": 695214, "width": 1}, {"arrows": "to", "from": 259612, "to": 951275, "width": 1}, {"arrows": "to", "from": 259612, "to": 973358, "width": 1}, {"arrows": "to", "from": 294369, "to": 84154, "width": 1}, {"arrows": "to", "from": 294369, "to": 202184, "width": 1}, {"arrows": "to", "from": 294369, "to": 219389, "width": 1}, {"arrows": "to", "from": 294369, "to": 244870, "width": 1}, {"arrows": "to", "from": 294369, "to": 316292, "width": 1}, {"arrows": "to", "from": 294369, "to": 383754, "width": 1}, {"arrows": "to", "from": 294369, "to": 450629, "width": 1}, {"arrows": "to", "from": 294369, "to": 635897, "width": 1}, {"arrows": "to", "from": 294369, "to": 687089, "width": 1}, {"arrows": "to", "from": 294369, "to": 723525, "width": 1}, {"arrows": "to", "from": 294369, "to": 766063, "width": 1}, {"arrows": "to", "from": 294369, "to": 800516, "width": 1}, {"arrows": "to", "from": 294369, "to": 979750, "width": 1}, {"arrows": "to", "from": 294369, "to": 994577, "width": 1}, {"arrows": "to", "from": 294369, "to": 1004198, "width": 1}, {"arrows": "to", "from": 294369, "to": 1081013, "width": 1}, {"arrows": "to", "from": 317344, "to": 60899, "width": 1}, {"arrows": "to", "from": 317344, "to": 68768, "width": 1}, {"arrows": "to", "from": 317344, "to": 103648, "width": 1}, {"arrows": "to", "from": 317344, "to": 419271, "width": 1}, {"arrows": "to", "from": 317344, "to": 446391, "width": 1}, {"arrows": "to", "from": 317344, "to": 452250, "width": 1}, {"arrows": "to", "from": 317344, "to": 521954, "width": 1}, {"arrows": "to", "from": 317344, "to": 687774, "width": 1}, {"arrows": "to", "from": 317344, "to": 881722, "width": 1}, {"arrows": "to", "from": 317344, "to": 973358, "width": 1}, {"arrows": "to", "from": 372448, "to": 695214, "width": 1}, {"arrows": "to", "from": 372448, "to": 951275, "width": 1}, {"arrows": "to", "from": 372448, "to": 973358, "width": 1}, {"arrows": "to", "from": 436487, "to": 973358, "width": 1}, {"arrows": "to", "from": 508821, "to": 594065, "width": 1}, {"arrows": "to", "from": 508821, "to": 695214, "width": 1}, {"arrows": "to", "from": 508821, "to": 973358, "width": 1}, {"arrows": "to", "from": 656935, "to": 41580, "width": 1}, {"arrows": "to", "from": 656935, "to": 168887, "width": 1}, {"arrows": "to", "from": 656935, "to": 246779, "width": 1}, {"arrows": "to", "from": 656935, "to": 325584, "width": 1}, {"arrows": "to", "from": 656935, "to": 495586, "width": 1}, {"arrows": "to", "from": 656935, "to": 687089, "width": 1}, {"arrows": "to", "from": 656935, "to": 887475, "width": 1}, {"arrows": "to", "from": 656935, "to": 892079, "width": 1}, {"arrows": "to", "from": 656935, "to": 909487, "width": 1}, {"arrows": "to", "from": 812024, "to": 52905, "width": 1}, {"arrows": "to", "from": 812024, "to": 402283, "width": 1}, {"arrows": "to", "from": 812024, "to": 695214, "width": 1}, {"arrows": "to", "from": 812024, "to": 755111, "width": 1}, {"arrows": "to", "from": 812024, "to": 973358, "width": 1}, {"arrows": "to", "from": 814082, "to": 594065, "width": 1}, {"arrows": "to", "from": 814082, "to": 155077, "width": 1}, {"arrows": "to", "from": 871035, "to": 820814, "width": 1}, {"arrows": "to", "from": 1022252, "to": 658450, "width": 1}, {"arrows": "to", "from": 1022252, "to": 687992, "width": 1}, {"arrows": "to", "from": 1033461, "to": 594065, "width": 1}, {"arrows": "to", "from": 1033461, "to": 237476, "width": 1}, {"arrows": "to", "from": 1033461, "to": 294151, "width": 1}, {"arrows": "to", "from": 30738, "to": 594065, "width": 1}, {"arrows": "to", "from": 30738, "to": 18911, "width": 1}, {"arrows": "to", "from": 47785, "to": 594065, "width": 1}, {"arrows": "to", "from": 147190, "to": 594065, "width": 1}, {"arrows": "to", "from": 291392, "to": 594065, "width": 1}, {"arrows": "to", "from": 291392, "to": 18911, "width": 1}, {"arrows": "to", "from": 302493, "to": 594065, "width": 1}, {"arrows": "to", "from": 302493, "to": 18911, "width": 1}, {"arrows": "to", "from": 572255, "to": 594065, "width": 1}, {"arrows": "to", "from": 662441, "to": 594065, "width": 1}, {"arrows": "to", "from": 776925, "to": 594065, "width": 1}, {"arrows": "to", "from": 897555, "to": 594065, "width": 1}, {"arrows": "to", "from": 897555, "to": 18911, "width": 1}, {"arrows": "to", "from": 384736, "to": 159911, "width": 1}, {"arrows": "to", "from": 384736, "to": 350987, "width": 1}, {"arrows": "to", "from": 384736, "to": 360668, "width": 1}, {"arrows": "to", "from": 384736, "to": 478351, "width": 1}, {"arrows": "to", "from": 384736, "to": 687089, "width": 1}, {"arrows": "to", "from": 384736, "to": 748045, "width": 1}, {"arrows": "to", "from": 838747, "to": 60464, "width": 1}, {"arrows": "to", "from": 167535, "to": 18911, "width": 1}, {"arrows": "to", "from": 371182, "to": 18911, "width": 1}, {"arrows": "to", "from": 910459, "to": 18911, "width": 1}, {"arrows": "to", "from": 1073075, "to": 18911, "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"enabled": true, "maxVelocity": 25, "minVelocity": 1.5}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

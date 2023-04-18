@@ -1,0 +1,7 @@
+const options = {
+  "physics": {
+    "enabled": true,
+    "maxVelocity": 25,
+    "minVelocity": 1.5
+  }
+}
