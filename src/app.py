@@ -30,7 +30,7 @@ if not os.path.exists(os.path.join("assets", "lib")):
     if not os.path.exists("lib"):
         raise RuntimeError("The lib directory is not found.")
     else:
-        shutil.move("lib", "assets/lib")
+        shutil.copytree("lib", "assets/lib")
         print("The lib/ directory is put under assets/")
 
 
