@@ -1,11 +1,14 @@
 import os
 import glob
 import shutil
+import pickle
 import pandas as pd
 import numpy as np
 from dash import Dash, Input, Output, dcc, html, State
 from dash.exceptions import PreventUpdate
 import plotly.express as px
+from model_helper import query_topk, load_embedding
+
 
 freq_map = {
     "H": "Hourly",
@@ -271,6 +274,22 @@ app.layout = html.Div(
             className="menu"
         ),
         html.Div(id="graph-layout2"),
+
+        html.Div(
+            children=[
+                dcc.Input(id="input-query", type="text", placeholder="Enter your query"),  # Input component for query
+                html.Div(id="output-query"),  # Output component for displaying query result
+                html.Button("Submit", id="submit-button"),  # Button component to trigger query processing
+            ]
+        ),
+
+        html.Div(
+            children=[
+                dcc.Input(id="input-query2", type="text", placeholder="Enter your query"),  # Input component for query
+                html.Div(id="output-query2"),  # Output component for displaying query result
+                html.Button("Submit", id="submit-button2"),  # Button component to trigger query processing
+            ]
+        )
     ]
 )
 
@@ -460,7 +479,75 @@ def add_strategy_divison(n_clicks, phis_addr):
     else:
         raise PreventUpdate
 
+@app.callback(
+    Output("output-query", "children"),  # Output to display query result
+    [Input("submit-button", "n_clicks")],  # Input from submit button click
+    [Input("input-query", "value")],  # Input from query input field
+)
+def process_query(n_clicks, query):
+    output_lines = []
+    if n_clicks is not None and query is not None:
+        # Process the query and generate the output lines
+        # In this example, we simply repeat the query in ten lines
+        top_address_list, top_distance_list = query_topk(query, 10)
+        for i in range(10):
+            output_lines.append(html.Li(
+                html.Div(
+                    children=[
+                    html.Span("Address ".format(i+1), style={"color": "red"}) ,  # Use Span component for red color
+                    html.Span("{}: {}" .format(i + 1, top_address_list[i])),
+                    html.Span("Score: ", style={"color": "red", "marginLeft": "40px"}),
+                    html.Span("{}".format(round(top_distance_list[i] , 4)))  # Use Span component for black color
+                    ]
+                )
+            ))
+    else:
+        # Display empty lines as output initially
+        for i in range(10):
+            output_lines.append(html.P(""))
+    return output_lines
 
+
+# Phishing query
+@app.callback(
+    Output("output-query2", "children"),  # Output to display query result
+    [Input("submit-button2", "n_clicks")],  # Input from submit button click
+    [Input("input-query2", "value")],  # Input from query input field
+)
+def process_query2(n_clicks, query):
+    output_lines = []
+    if n_clicks is not None and query is not None:
+        # Process the query and generate the output lines
+        X, address_list = load_embedding()
+        index = -1
+        for i in range(len(address_list)):
+            if query == address_list[i]:
+                index =i
+                break
+
+
+        # Load the saved model
+        with open('data/classifier.pkl', 'rb') as f:
+            rf_loaded = pickle.load(f)
+
+        # Use the loaded model to make predictions
+        y_test_proba = rf_loaded.predict_proba(np.expand_dims(X[index],axis=0))[:, 1]
+
+        output_lines.append(html.Li(
+            html.Div(
+                children=[
+                html.Span("Score: ", style={"color": "red", "marginLeft": "40px"}),
+                html.Span("{}".format(y_test_proba))  # Use Span component for black color
+                ]
+            )
+        ))
+    else:
+        # Display empty lines as output initially
+        output_lines.append(html.P(""))
+    return output_lines
+
+
+# some statistic function
 def process_addr(addr_str, freq="H"):
     addr_df = data.loc[data["from_address"] == addr_str]
     addr_df = addr_df.groupby(pd.Grouper(freq=freq)).count()
