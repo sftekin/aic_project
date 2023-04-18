@@ -28,8 +28,8 @@ def plot_graph(edges, address_list, task='deanon', mode='label', combine_address
         if combine_addresses_flag:
             print('Switching to combine_addresses_flag=False because the task is deanonymization')
             combine_addresses_flag = False
-        if mode == 'label' and address_list and not isinstance(address_list[0], list):
-            print('In deanonymization label visualization, provide list of pairs as addresses')
+        if mode != 'label' and address_list and not isinstance(address_list[0], list):
+            print('In deanonymization label/label_pred visualization, provide list of pairs as addresses')
             raise ValueError
         if mode == 'pred' and address_list and isinstance(address_list[0], list):
             print('In deanonymization pred visualization, provide list of addresses (not pairs)')
@@ -41,17 +41,19 @@ def plot_graph(edges, address_list, task='deanon', mode='label', combine_address
     address_df_['id'] = address_df.index
 
     preds = None
-    if mode == 'pred':
+    if mode == 'pred' or mode == 'label-pred':
         if task == 'deanon':
-            preds = pd.read_csv(os.path.join('../EthereumDataset', 'AIC_ENS_pred_similarity_proba.txt'), sep=',')
+            preds = pd.read_csv(os.path.join('../EthereumDataset', 'AIC_ENS_pred_similarity_proba_PSBERT.txt'), sep=',')
             preds['query_addr'] = preds['query_addr'].map(address_df_['id'].to_dict(), na_action='ignore')
             preds['cand_addr'] = preds['cand_addr'].map(address_df_['id'].to_dict()).astype(int)
             preds.dropna(inplace=True)
             preds['query_addr'] = preds['query_addr'].astype(int)
             preds.set_index(['query_addr', 'cand_addr'], inplace=True)
         else:
-            preds = pd.read_csv(os.path.join('../EthereumDataset', 'AIC_eoa_pred_phishing_proba.txt'), sep=',')
-            preds['address'].map(address_df_['id'].to_dict()).astype(int)
+            preds = pd.read_csv(os.path.join('../EthereumDataset', 'AIC_eoa_pred_phishing_proba_BERT4ETH.txt'), sep=',')
+            preds['address'] = preds['address'].map(address_df_['id'].to_dict(), na_action='ignore')
+            preds.dropna(inplace=True)
+            preds['address'] = preds['address'].astype(int)
             preds.set_index('address', inplace=True)
 
     html_path_list = []
@@ -64,34 +66,34 @@ def plot_graph(edges, address_list, task='deanon', mode='label', combine_address
             print(combined_ego_graph)
         graph = combined_ego_graph
         tag = f"{task}_{mode}_{'_'.join(address_list)}"
-        html_path = plot_graph_helper(graph, address_df, task, address_list, preds, tag, folder)
+        html_path = plot_graph_helper(graph, address_df, task, mode, address_list, preds, tag, folder)
         html_path_list.append(html_path)
     else:
         if task == 'phish' or mode == 'pred':
             for address in tqdm(address_list):
                 tag = f"{task}_{mode}_{address}"
                 ego_graph = get_subgraph(edges, address)
-                html_path = plot_graph_helper(ego_graph, address_df, task, [address], preds, tag, folder)
+                html_path = plot_graph_helper(ego_graph, address_df, task, mode, [address], preds, tag, folder)
                 html_path_list.append(html_path)
-        else:  # deanon-label
+        else:  # deanon label or deanon label-pred
             for pair in tqdm(address_list):
                 combined_ego_graph = nx.DiGraph()
                 for address in pair:
                     ego_graph = get_subgraph(edges, address)
                     combined_ego_graph = nx.compose(ego_graph, combined_ego_graph)
                 tag = f"{task}_{mode}_{pair[0]}_{pair[1]}"
-                html_path = plot_graph_helper(combined_ego_graph, address_df, task, pair, preds, tag, folder)
+                html_path = plot_graph_helper(combined_ego_graph, address_df, task, mode, pair, preds, tag, folder)
                 html_path_list.append(html_path)
 
     return html_path_list
 
 
-def plot_graph_helper(graph, address_df, task, address_list, preds=None, tag='', folder=''):
+def plot_graph_helper(graph, address_df, task, mode, address_list, preds=None, tag='', folder=''):
     # hover titles
     labels = dict([(i, address_df.loc[i]['address']) for i in graph.nodes])
     nx.set_node_attributes(graph, labels, 'title')
 
-    if preds is None:
+    if mode == 'label' or mode == 'label-pred':
         if task == 'phish':
             colors = dict([(i, 'orangered') for i in graph.nodes if address_df.loc[i]['phish_flag']])
 
@@ -106,17 +108,46 @@ def plot_graph_helper(graph, address_df, task, address_list, preds=None, tag='',
                 #     colors[i] = color_list[pair_idx % len(color_list)]
         else:
             raise NotImplementedError
+
+        if mode == 'label-pred':
+            colors[address_list[0]] = 'black'
+
+            labels = {}
+            for i in graph.nodes:
+                if task == 'phish':
+                    try:
+                        val = float(preds.loc[i].pred_phishing_proba)
+                    except:
+                        val = 0.
+
+                else:
+                    try:
+                        val = float(preds.loc[address_list[0], i].pred_score)
+                    except:
+                        val = 0.
+
+                if val > 0.1:
+                    labels[i] = f'{val:.3f}'
+            nx.set_node_attributes(graph, labels, 'label')
+
     else:
         colors = {}
         for i in graph.nodes:
             if task == 'phish':
-                val = preds.loc[i].pred_score
+                try:
+                    val = float(preds.loc[i].pred_phishing_proba)
+                except:
+                    val = 0.
+
+                colors[i] = matplotlib.colors.to_hex(matplotlib.colormaps['Reds'](val))
+
             else:
                 try:
-                    val = preds.loc[address_list[0], i].pred_score
+                    val = float(preds.loc[address_list[0], i].pred_score)
                 except:
-                    val = 0
-            colors[i] = matplotlib.colors.to_hex(matplotlib.colormaps['Reds'](val * 255))
+                    val = 0.
+
+                colors[i] = matplotlib.colors.to_hex(matplotlib.colormaps['Reds'](val ** 5))
 
     nx.set_node_attributes(graph, colors, 'color')
 
@@ -148,6 +179,7 @@ def plot_graph_helper(graph, address_df, task, address_list, preds=None, tag='',
     nt.write_html(html_path, local=True)
     # time.sleep(20)
     return html_path
+
 
 def set_edge_width(edges):
     edges['value'] = (np.log10(edges.value).clip(0) + 1).astype(int)  # for width
@@ -203,8 +235,8 @@ if __name__ == '__main__':
 
     start_date = "2017-06-22"  # "2017-06-22"
     end_date = "2022-03-01"    # "2022-03-01"
-    task = 'deanon'  # deanon or phish
-    mode = 'label'   # label or pred
+    task = 'phish'  # deanon or phish
+    mode = 'label-pred'   # label or pred or label-pred
 
     address_data_path = os.path.join("data", "address_data.csv")
     edges_data_path = os.path.join("data", f"edges_{start_date}_{end_date}.csv")
@@ -231,6 +263,10 @@ if __name__ == '__main__':
         if mode == 'label':
             address_list = [list(address_df[address_df.pair_idx == i].index) for i in range(167)]
             address_list = [pair for pair in address_list if len(pair) == 2]
+        elif mode == 'label-pred':
+            address_list = [list(address_df[address_df.pair_idx == i].index) for i in range(167)]
+            address_list = [pair for pair in address_list if len(pair) == 2] + \
+                           [list(reversed(pair)) for pair in address_list if len(pair) == 2]
         else:
             address_list = address_df[address_df.pair_idx != -1].index.tolist()
     else:
