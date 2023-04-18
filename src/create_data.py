@@ -7,7 +7,8 @@ from datetime import datetime
 def run():
     data_path = "../EthereumDataset/phishing_deanony_2hop_transaction.csv"
 
-    columns = ['hash','block_number','transaction_index','from_address','to_address','value','gas','gas_price', 'block_timestamp']
+    columns = ['hash', 'block_number', 'transaction_index', 'from_address',
+               'to_address', 'value', 'gas', 'gas_price', 'block_timestamp']
     data = []
     with open(data_path, "r") as f:
         for line in f.readlines():
@@ -16,8 +17,7 @@ def run():
 
     for col in ["block_number", "transaction_index", "value", "gas", "gas_price"]:
         data_df[col] = data_df[col].astype(float)
-    # data_df = data_df[data_df.value > 0]  # 7871005 -> 4251155 rows
-    data_df.value /= 10 ** 18
+    data_df.value /= 1e18
 
     data_df["block_timestamp"] = data_df["block_timestamp"].astype(int)
     data_df.sort_values("block_timestamp", inplace=True)
