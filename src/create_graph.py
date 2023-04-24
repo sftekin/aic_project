@@ -8,19 +8,22 @@ import pandas as pd
 import numpy as np
 
 
+cur_dir = os.path.dirname(__file__)
+
+
 def create_addresses():
-    data_path = os.path.join("data", "eth_data.csv")
+    data_path = os.path.join(cur_dir, "data", "eth_data.csv")
     data_df = pd.read_csv(data_path, parse_dates=["block_timestamp"], index_col=0,
                           usecols=['Unnamed: 0', 'hash', 'from_address', 'to_address', 'value', 'block_timestamp'])
 
     # index users without clipping data
     nodes = np.unique(data_df["from_address"].tolist() + data_df["to_address"].tolist()).tolist()
 
-    phish_path = os.path.join("../EthereumDataset", "exp_phishing_eoa.txt")
+    phish_path = os.path.join(cur_dir, "../EthereumDataset", "exp_phishing_eoa.txt")
     with open(phish_path, "r") as f:
         phish_acc_list = f.read().splitlines()
 
-    pair_path = os.path.join("../EthereumDataset", "exp_ENS_pairs.txt")
+    pair_path = os.path.join(cur_dir, "../EthereumDataset", "exp_ENS_pairs.txt")
     deanon_pair_list = []
     with open(pair_path, "r") as f:
         counter = 0
@@ -29,7 +32,7 @@ def create_addresses():
                 deanon_pair_list.append(line.strip().split(','))
             counter += 1
 
-    type_path = os.path.join("../EthereumDataset", "AIC_node_type.txt")
+    type_path = os.path.join(cur_dir, "../EthereumDataset", "AIC_node_type.txt")
     node_type_df = pd.read_csv(type_path, index_col='address')
 
     address_list = [(i, n, n in phish_acc_list, generate_pair_idx(deanon_pair_list, n), node_type_df.loc[n]['type']) for i, n in enumerate(nodes)]  # TODO: optimize
@@ -39,11 +42,10 @@ def create_addresses():
 
 
 def create_edges(address_df, start_date, end_date):
-
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
 
-    data_path = os.path.join("data", "eth_data.csv")
+    data_path = os.path.join(cur_dir, "data", "eth_data.csv")
     data_df = pd.read_csv(data_path, parse_dates=["block_timestamp"], index_col=0,
                           usecols=['Unnamed: 0', 'hash', 'from_address', 'to_address', 'value', 'block_timestamp'])
 
@@ -81,8 +83,8 @@ if __name__ == '__main__':
     start_date = "2017-06-22"  # "2017-06-22"
     end_date = "2022-03-01"    # "2022-03-01"
 
-    address_data_path = os.path.join("data", "address_data.csv")
-    edges_data_path = os.path.join("data", f"edges_{start_date}_{end_date}.csv")
+    address_data_path = os.path.join(cur_dir, "data", "address_data.csv")
+    edges_data_path = os.path.join(cur_dir, "data", f"edges_{start_date}_{end_date}.csv")
 
     if os.path.isfile(address_data_path):
         print('Loading addresses...')

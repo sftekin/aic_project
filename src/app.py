@@ -16,6 +16,8 @@ freq_map = {
     "M": "Monthly"
 }
 
+cur_dir = os.path.dirname(__file__)
+
 # load data
 data = (pd.read_csv("data/eth_data.csv", parse_dates=["block_timestamp"], index_col=0)
         .set_index("block_timestamp"))
@@ -24,12 +26,12 @@ id2addr = addr_data["address"].to_dict()
 addr2id = {v: k for k, v in id2addr.items()}
 
 # put the html files inside assets folder
-for html_path in glob.glob(os.path.join("outputs", "selections", "*.html")):
-    dest_path = os.path.join("assets", os.path.basename(html_path))
+for html_path in glob.glob(os.path.join(cur_dir, "outputs", "selections", "*.html")):
+    dest_path = os.path.join(cur_dir, "assets", os.path.basename(html_path))
     shutil.copy(html_path, dest_path)
 
 
-if not os.path.exists(os.path.join("assets", "lib")):
+if not os.path.exists(os.path.join(cur_dir, "assets", "lib")):
     if not os.path.exists("lib"):
         raise RuntimeError("The lib directory is not found.")
     else:
@@ -436,7 +438,7 @@ def update_deanony_acc_weekly_plot(addr_1, addr_2):
 def add_deanon_graph(n_clicks, deanon_addr):
     if n_clicks:
         html_addr = ""
-        for html_path in glob.glob(os.path.join("assets", "deanon_label-pred_*")):
+        for html_path in glob.glob(os.path.join(cur_dir, "assets", "deanon_label-pred_*")):
             if str(addr2id[deanon_addr]) in html_path:
                 html_addr = html_path
 
@@ -482,7 +484,7 @@ def update_deanony_time_plot(freq, addr):
 )
 def add_strategy_divison(n_clicks, phis_addr):
     if n_clicks:
-        html_addr = os.path.join("assets", f"phish_label-pred_{addr2id[phis_addr]}.html")
+        html_addr = os.path.join(cur_dir, "assets", f"phish_label-pred_{addr2id[phis_addr]}.html")
         print(html_addr)
         element = html.Div(
             style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},

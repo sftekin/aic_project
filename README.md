@@ -17,4 +17,13 @@ Run the following command to install the requirements and create a local server 
 ```
 make poetry
 ```
-Note that we suggest you to create a virtual env for the project first.
+Note that we suggest you to create a virtual env for the project first. For example,
+
+```
+$ conda create -n eth python=3.8
+```
+then and install poetry
+```
+$ activate eth
+$ pip install poetry
+```
