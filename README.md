@@ -17,4 +17,4 @@ Run the following command to install the requirements and create a local server 
 ```
 make poetry
 ```
-
+Note that we suggest you to create a virtual env for the project first.
