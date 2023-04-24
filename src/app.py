@@ -19,9 +19,9 @@ freq_map = {
 cur_dir = os.path.dirname(__file__)
 
 # load data
-data = (pd.read_csv("data/eth_data.csv", parse_dates=["block_timestamp"], index_col=0)
+data = (pd.read_csv(os.path.join(cur_dir, "data/eth_data.csv"), parse_dates=["block_timestamp"], index_col=0)
         .set_index("block_timestamp"))
-addr_data = pd.read_csv("data/address_data.csv", index_col=0)
+addr_data = pd.read_csv(os.path.join(cur_dir, "data/address_data.csv"), index_col=0)
 id2addr = addr_data["address"].to_dict()
 addr2id = {v: k for k, v in id2addr.items()}
 
