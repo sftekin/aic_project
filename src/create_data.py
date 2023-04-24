@@ -29,7 +29,7 @@ def run():
 
     if not os.path.exists("data"):
         os.makedirs("data")
-    data_df.to_csv(os.path.join("data", "eth_data.csv"))
+    data_df.to_csv(os.path.join(cur_dir, "data", "eth_data.csv"))
 
 
 if __name__ == '__main__':
