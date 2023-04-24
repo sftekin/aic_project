@@ -438,7 +438,7 @@ def update_deanony_acc_weekly_plot(addr_1, addr_2):
 def add_deanon_graph(n_clicks, deanon_addr):
     if n_clicks:
         html_addr = ""
-        for html_path in glob.glob(os.path.join(cur_dir, "assets", "deanon_label-pred_*")):
+        for html_path in glob.glob(os.path.join("assets", "deanon_label-pred_*")):
             if str(addr2id[deanon_addr]) in html_path:
                 html_addr = html_path
 
@@ -484,7 +484,7 @@ def update_deanony_time_plot(freq, addr):
 )
 def add_strategy_divison(n_clicks, phis_addr):
     if n_clicks:
-        html_addr = os.path.join(cur_dir, "assets", f"phish_label-pred_{addr2id[phis_addr]}.html")
+        html_addr = os.path.join("assets", f"phish_label-pred_{addr2id[phis_addr]}.html")
         print(html_addr)
         element = html.Div(
             style={'display': 'flex', 'justify-content': 'center', 'align-items': 'center'},
@@ -513,10 +513,10 @@ def process_query(n_clicks, query):
             output_lines.append(html.Li(
                 html.Div(
                     children=[
-                    html.Span("Address ".format(i+1), style={"color": "red"}) ,  # Use Span component for red color
-                    html.Span("{}: {}" .format(i + 1, top_address_list[i])),
-                    html.Span("Score: ", style={"color": "red", "marginLeft": "40px"}),
-                    html.Span("{}".format(round(top_distance_list[i] , 4)))  # Use Span component for black color
+                        html.Span("Address ".format(i+1), style={"color": "red"}) ,  # Use Span component for red color
+                        html.Span("{}: {}" .format(i + 1, top_address_list[i])),
+                        html.Span("Score: ", style={"color": "red", "marginLeft": "40px"}),
+                        html.Span("{}".format(round(top_distance_list[i] , 4)))  # Use Span component for black color
                     ]
                 )
             ))
@@ -555,8 +555,8 @@ def process_query2(n_clicks, query):
         output_lines.append(html.Li(
             html.Div(
                 children=[
-                html.Span("Score: ", style={"color": "red", "marginLeft": "40px"}),
-                html.Span("{}".format(y_test_proba))  # Use Span component for black color
+                    html.Span("Score: ", style={"color": "red", "marginLeft": "40px"}),
+                    html.Span("{}".format(y_test_proba))  # Use Span component for black color
                 ]
             )
         ))
